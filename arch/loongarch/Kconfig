@@ -56,4 +56,7 @@ config STACK_SIZE_SHIFT
 config OF_BOARD_FIXUP
 	default y if OF_SEPARATE
 
+config LIB_BOOTM
+	select CRC32
+
 endmenu
