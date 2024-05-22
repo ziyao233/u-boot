@@ -1114,89 +1114,118 @@ ofnode fdtdec_get_next_memory_node(ofnode mem)
 	return get_next_memory_node(mem);
 }
 
+static void sort_memory_banks(int num)
+{
+	int i, j;
+	phys_addr_t tmp_start;
+	phys_size_t tmp_size;
+	struct bd_info *bd = gd->bd;
+
+	for (i = 0; i < num - 1; i++) {
+		for (j = i + 1; j < num; j++) {
+			if (bd->bi_dram[i].start > bd->bi_dram[j].start) {
+				tmp_start = bd->bi_dram[i].start;
+				tmp_size = bd->bi_dram[i].size;
+				bd->bi_dram[i].start = bd->bi_dram[j].start;
+				bd->bi_dram[i].size = bd->bi_dram[j].size;
+				bd->bi_dram[j].start = tmp_start;
+				bd->bi_dram[j].size = tmp_size;
+			}
+		}
+	}
+}
+
 int fdtdec_setup_memory_banksize(void)
 {
-	int bank, ret, reg = 0;
-	struct resource res;
+	int bank = 0;
 	ofnode mem = ofnode_null();
 
-	mem = get_next_memory_node(mem);
-	if (!ofnode_valid(mem)) {
-		debug("%s: Missing /memory node\n", __func__);
+	while (true) {
+		struct resource res;
+		int reg = 0;
+
+		mem = get_next_memory_node(mem);
+		if (!ofnode_valid(mem))
+			break;
+
+		while (true) {
+			int ret = ofnode_read_resource(mem, reg, &res);
+			if (ret < 0)
+				break;
+
+			if (bank >= CONFIG_VAL(NR_DRAM_BANKS))
+				goto too_may_memory_banks;
+
+			gd->bd->bi_dram[bank].start = (phys_addr_t)res.start;
+			gd->bd->bi_dram[bank].size =
+				(phys_size_t)(res.end - res.start + 1);
+
+			log_debug("%s: DRAM Bank #%d %s.%d: start = 0x%llx, size = 0x%llx\n",
+				  __func__, bank, ofnode_get_name(mem), reg,
+				 (unsigned long long)gd->bd->bi_dram[bank].start,
+				 (unsigned long long)gd->bd->bi_dram[bank].size);
+			reg++;
+			bank++;
+		}
+	}
+
+	if (!bank) {
+		log_warning("%s: Missing /memory node\n", __func__);
 		return -EINVAL;
 	}
 
-	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
-		ret = ofnode_read_resource(mem, reg++, &res);
-		if (ret < 0) {
-			reg = 0;
-			mem = get_next_memory_node(mem);
-			if (!ofnode_valid(mem))
-				break;
-
-			ret = ofnode_read_resource(mem, reg++, &res);
-			if (ret < 0)
-				break;
-		}
-
-		if (ret != 0)
-			return -EINVAL;
-
-		gd->bd->bi_dram[bank].start = (phys_addr_t)res.start;
-		gd->bd->bi_dram[bank].size =
-			(phys_size_t)(res.end - res.start + 1);
-
-		debug("%s: DRAM Bank #%d: start = %pap, size = %pap\n",
-		      __func__, bank,
-		      &gd->bd->bi_dram[bank].start,
-		      &gd->bd->bi_dram[bank].size);
-	}
+	sort_memory_banks(bank);
 
 	return 0;
+
+too_may_memory_banks:
+	log_warning("%s: Too many memory banks\n", __func__);
+	return -EINVAL;
 }
 
 int fdtdec_setup_mem_size_base_lowest(void)
 {
-	int bank, ret, reg = 0;
-	struct resource res;
-	unsigned long base;
-	phys_size_t size;
+	int bank = 0;
 	ofnode mem = ofnode_null();
+	__maybe_unused const char *final_name;
+	__maybe_unused int final_reg;
 
 	gd->ram_base = (unsigned long)~0;
 
-	mem = get_next_memory_node(mem);
-	if (!ofnode_valid(mem)) {
-		debug("%s: Missing /memory node\n", __func__);
+	while (true) {
+		struct resource res;
+		phys_size_t base, size;
+		int reg = 0;
+
+		mem = get_next_memory_node(mem);
+		if (!ofnode_valid(mem))
+			break;
+
+		while (true) {
+			int ret = ofnode_read_resource(mem, reg, &res);
+			if (ret < 0)
+				break;
+			base = res.start;
+			size = res.end - res.start + 1;
+			if (gd->ram_base > base && size) {
+				gd->ram_base = base;
+				gd->ram_size = size;
+				final_name = ofnode_get_name(mem);
+				final_reg = reg;
+			}
+			reg++;
+			bank++;
+		}
+	}
+
+	if (!bank) {
+		log_warning("%s: Missing /memory node\n", __func__);
 		return -EINVAL;
 	}
 
-	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
-		ret = ofnode_read_resource(mem, reg++, &res);
-		if (ret < 0) {
-			reg = 0;
-			mem = get_next_memory_node(mem);
-			if (!ofnode_valid(mem))
-				break;
-
-			ret = ofnode_read_resource(mem, reg++, &res);
-			if (ret < 0)
-				break;
-		}
-
-		if (ret != 0)
-			return -EINVAL;
-
-		base = (unsigned long)res.start;
-		size = (phys_size_t)(res.end - res.start + 1);
-
-		if (gd->ram_base > base && size) {
-			gd->ram_base = base;
-			gd->ram_size = size;
-			debug("%s: Initial DRAM base %lx size %lx\n",
-			      __func__, base, (unsigned long)size);
-		}
-	}
+	log_debug("%s: Initial DRAM %s.%d: base %lx size %lx\n",
+		  __func__, final_name, final_reg,
+		  (ulong)gd->ram_base, (ulong)gd->ram_size);
 
 	return 0;
 }
