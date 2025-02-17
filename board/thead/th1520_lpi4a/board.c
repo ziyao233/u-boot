@@ -12,8 +12,3 @@ int board_init(void)
 
 	return 0;
 }
-
-void board_boot_order(u32 *spl_boot_list)
-{
-	while (1);
-}
