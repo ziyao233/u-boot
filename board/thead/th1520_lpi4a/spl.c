@@ -14,7 +14,7 @@ u32 spl_boot_device(void)
 	case 1:
 	case 2:
 	case 3:
-		return BOOT_DEVICE_BOOTROM;
+		return BOOT_DEVICE_RAM;
 	case 4:
 		return BOOT_DEVICE_MMC1;
 	case 5:
