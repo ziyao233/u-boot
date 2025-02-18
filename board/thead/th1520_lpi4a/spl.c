@@ -5,9 +5,12 @@
 
 #include <asm/io.h>
 #include <asm/spl.h>
+#include <asm/arch/cpu.h>
 #include <asm/arch/sysctl_regs.h>
 #include <hang.h>
 #include <spl.h>
+
+#define TH1520_PMP_BASE		(void *)0xffdc020000
 
 u32 spl_boot_device(void)
 {
@@ -43,4 +46,6 @@ void board_init_f(ulong dummy)
 
 	extern void init_ddr(void);
 	init_ddr();
+
+	th1520_invalidate_pmp();
 }
