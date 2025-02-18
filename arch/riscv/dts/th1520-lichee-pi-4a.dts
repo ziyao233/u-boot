@@ -28,6 +28,10 @@
 	};
 };
 
+&clint {
+	bootph-pre-ram;
+};
+
 &uart0 {
 	bootph-pre-ram;
 	clock-frequency = <100000000>;
