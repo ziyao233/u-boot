@@ -34,8 +34,17 @@
 				load = /bits/ 64 <CONFIG_TEXT_BASE>;
 
 				uboot_blob: blob-ext {
-					filename = "u-boot-nodtb.bin";
+					filename = "u-boot-dtb.bin";
 				};
+			};
+		};
+
+		configurations {
+			default = "conf-th1520-lichee-pi-4a";
+
+			conf-th1520-lichee-pi-4a {
+				description = "th1520-lichee-pi-4a";
+				loadables = "uboot";
 			};
 		};
 	};
