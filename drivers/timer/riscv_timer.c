@@ -7,7 +7,7 @@
  *
  * RISC-V architecturally-defined generic timer driver
  *
- * This driver provides generic timer support for S-mode U-Boot.
+ * This driver provides generic timer support through TIME CSR for U-Boot.
  */
 
 #include <config.h>
@@ -106,6 +106,7 @@ static const struct timer_ops riscv_timer_ops = {
 
 static const struct udevice_id riscv_timer_ids[] = {
 	{ .compatible = "riscv,timer", },
+	{ .compatible = "thead,c900-clint" },
 	{ }
 };
 
