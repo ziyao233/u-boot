@@ -6,6 +6,8 @@
 #include <asm/io.h>
 #include <asm/spl.h>
 #include <asm/arch/sysctl_regs.h>
+#include <hang.h>
+#include <spl.h>
 
 u32 spl_boot_device(void)
 {
@@ -26,4 +28,19 @@ u32 spl_boot_device(void)
 	}
 
 	unreachable();
+}
+
+void board_init_f(ulong dummy)
+{
+	int ret = spl_early_init();
+
+	if (ret) {
+		debug("spl_early_init() failed %d\n", ret);
+		hang();
+	}
+
+	preloader_console_init();
+
+	extern void init_ddr(void);
+	init_ddr();
 }
