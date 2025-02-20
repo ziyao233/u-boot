@@ -25,6 +25,31 @@
 		fit,fdt-list = "of-list";
 
 		images {
+			fdt-th1520-lichee-pi-4a {
+				description = "th1520-lichee-pi-4a";
+				load = <0x20000000>;
+				compression = "none";
+
+				blob-ext {
+					filename = "arch/riscv/dts/th1520-lichee-pi-4a.dtb";
+				};
+			};
+
+			opensbi {
+				description = "OpenSBI fw_dynamic Firmware";
+				type = "firmware";
+				os = "opensbi";
+				arch = "riscv";
+				compression = "none";
+				load = /bits/ 64 <CONFIG_SPL_OPENSBI_LOAD_ADDR>;
+				entry = /bits/64 <CONFIG_SPL_OPENSBI_LOAD_ADDR>;
+
+				opensbi_blob: opensbi {
+					filename = "fw_dynamic.bin";
+					missing-msg = "opensbi";
+				};
+			};
+
 			uboot {
 				description = "U-Boot";
 				type = "standalone";
@@ -44,6 +69,8 @@
 
 			conf-th1520-lichee-pi-4a {
 				description = "th1520-lichee-pi-4a";
+				fdt = "fdt-th1520-lichee-pi-4a";
+				firmware = "opensbi";
 				loadables = "uboot";
 			};
 		};
