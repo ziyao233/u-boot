@@ -54,6 +54,4 @@ void enable_auto_refresh(void);
 void lpddr4_auto_selref(void);
 int lpddr4_query_boundary(enum DDR_TYPE type, int rank_num, int speed,
                     enum DDR_BITWIDTH bits, unsigned long size);
-int lpddr4_reinit_ctrl(enum DDR_TYPE type, int rank_num, int speed,
-                    enum DDR_BITWIDTH bits, unsigned long size);
 #endif // DDR_COMMON_FUNCE_H

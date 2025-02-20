@@ -37,24 +37,3 @@ void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH 
 
   lpddr4_auto_selref();
 }
-
-int fixup_ddr_addrmap(unsigned long size)
-{
-  enum DDR_TYPE type = get_ddr_type();
-  int rank_num = get_ddr_rank_number();
-  int speed = get_ddr_freq();
-  enum DDR_BITWIDTH bits = get_ddr_bitwidth();
-
-  return lpddr4_reinit_ctrl(type, rank_num, speed, bits, size);
-}
-
-int query_ddr_boundary(unsigned long size)
-{
-  enum DDR_TYPE type = get_ddr_type();
-  int rank_num = get_ddr_rank_number();
-  int speed = get_ddr_freq();
-  enum DDR_BITWIDTH bits = get_ddr_bitwidth();
-
-  return lpddr4_query_boundary(type, rank_num, speed, bits, size);
-}
-
