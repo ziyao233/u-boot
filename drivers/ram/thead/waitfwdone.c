@@ -1,30 +1,6 @@
 #include "common_lib.h"
 #include "ddr_common_func.h"
 
-// L0 remove DDR_FW_STAGE_MSG and DDR_FW_DETAIL_MSG , only show init OK
-#ifdef CONFIG_FW_MSG_L1
-#define DDR_FW_STAGE_MSG    //L1  only show stage message
-#endif
-
-#ifdef CONFIG_FW_MSG_L2
-#define DDR_FW_DETAIL_MSG   //1D and 2D Stream Message display
-#define DDR_FW_2D_BRIEF_MSG       //L2 Message  show 2D brief message
-#endif
-
-#ifdef CONFIG_FW_MSG_L3
-#define DDR_FW_DETAIL_MSG   //L3  Full  message (should define DDR_FW_STAGE_MSG)
-#undef DDR_FW_2D_BRIEF_MSG        //L3 Message  show 2D detail message
-#endif
-
-#ifdef CONFIG_FW_MSG_TRAIN_1D
-#define DDR_FW_TRAIN_1D_MSG
-#endif
-
-#ifdef DDR_FW_DETAIL_MSG
- #undef DDR_FW_STAGE_MSG
- #define DDR_FW_STAGE_MSG
-#endif
-
 unsigned int get_mails(void)
 {
     unsigned int read;

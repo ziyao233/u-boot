@@ -1060,22 +1060,3 @@ int dwc_ddrphy_phyinit_regInterface(regInstr myRegInstr) {
     ddr_phy_reg_wr(0xd0000, 0x1);
     return 1;
 }
-
-void dwc_umctl_init_skip_traing(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH bits)
-{
-  ddr_sysreg_wr(DDR_CFG0, 0x50);  // release apb presetn
-  ddr_sysreg_wr(DDR_CFG0, 0x50);
-  ddr_sysreg_wr(DDR_CFG0, 0x50);
-  if (bits == 32) {
-    ddr_sysreg_wr(DDR_CFG0, 0x52);
-  }
-  ctrl_init(rank_num, speed);
-  addrmap(rank_num, bits);
-
-  de_assert_other_reset_ddr(); //after this step, only PwrOk is staill low
-
-  dq_pinmux(bits);
-
-
-}
-
