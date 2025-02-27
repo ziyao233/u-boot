@@ -410,6 +410,7 @@ config NR_CPUS
 config SBI
 	bool
 	default y if RISCV_SMODE || SPL_RISCV_SMODE
+	imply OF_HAS_PRIOR_STAGE
 
 choice
 	prompt "SBI support"
