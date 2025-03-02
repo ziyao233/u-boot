@@ -32,6 +32,7 @@
 &ethernet0 {
 	status = "okay";
 	phy-mode = "rmii";
+	mac-address = [0e958ed1e8af];
 };
 
 &osc {
