@@ -133,12 +133,52 @@
 		};
 
 		ethernet0: ethernet@4070000 {
-			compatible = "sophgo,cv1800b-dwmac";
+			compatible = "sophgo,cv1800b-dwmac", "snps,dwmac-3.70a";
 			reg = <0x04070000 0x10000>;
 			interrupts = <31 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&clk CLK_ETH0_500M>, <&clk CLK_AXI4_ETH0>;
-			clock-names = "stmmaceth", "pclk";
+			interrupt-names = "macirq";
+			clocks = <&clk CLK_AXI4_ETH0>, <&clk CLK_ETH0_500M>;
+			clock-names = "stmmaceth", "ptp_ref";
+			phy-handle = <&phy0>;
+			phy-mode = "rmii";
+			rx-fifo-depth = <8192>;
+			tx-fifo-depth = <8192>;
+			snps,multicast-filter-bins = <0>;
+			snps,perfect-filter-entries = <1>;
+			snps,aal;
+			snps,txpbl = <8>;
+			snps,rxpbl = <8>;
+			snps,mtl-rx-config = <&gmac0_mtl_rx_setup>;
+			snps,mtl-tx-config = <&gmac0_mtl_tx_setup>;
+			snps,axi-config = <&gmac0_stmmac_axi_setup>;
 			status = "disabled";
+
+			mdio {
+				compatible = "snps,dwmac-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				phy0: phy@0 {
+					compatible = "ethernet-phy-ieee802.3-c22";
+					reg = <0>;
+				};
+			};
+
+			gmac0_mtl_rx_setup: rx-queues-config {
+				snps,rx-queues-to-use = <1>;
+				queue0 {};
+			};
+
+			gmac0_mtl_tx_setup: tx-queues-config {
+				snps,tx-queues-to-use = <1>;
+				queue0 {};
+			};
+
+			gmac0_stmmac_axi_setup: stmmac-axi-config {
+				snps,blen = <16 8 4 0 0 0 0>;
+				snps,rd_osr_lmt = <2>;
+				snps,wr_osr_lmt = <1>;
+			};
 		};
 
 		uart0: serial@4140000 {
