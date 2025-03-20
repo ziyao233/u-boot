@@ -22,36 +22,6 @@ typedef union {
 
 typedef union {
     struct {
-        unsigned int mr_type : 1; // [0]
-        unsigned int Reserved_1_2 : 2; // [2:1]
-        unsigned int sw_init_int : 1; // [3]
-        unsigned int mr_rank : 2; // [5:4]
-        unsigned int Reserved_6_11 : 6; // [11:6]
-        unsigned int mr_addr : 4; // [15:12]
-        unsigned int Reserved_16_30 : 15; // [30:16]
-        unsigned int mr_wr : 1; // [31]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_MRCTRL0_U;
-
-typedef union {
-    struct {
-        unsigned int mr_data : 18; // [17:0]
-        unsigned int Reserved_18_31 : 14; // [31:18]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_MRCTRL1_U;
-
-typedef union {
-    struct {
-        unsigned int mr_wr_busy : 1; // [0]
-        unsigned int Reserved_1_31 : 31; // [31:1]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_MRSTAT_U;
-
-typedef union {
-    struct {
         unsigned int selfref_en : 1; // [0]
         unsigned int powerdown_en : 1; // [1]
         unsigned int deeppowerdown_en : 1; // [2]
@@ -67,77 +37,8 @@ typedef union {
 } DWC_DDR_UMCTL2_C_STRUCT_PWRCTL_U;
 
 typedef union {
-    struct {
-        unsigned int pre_cke_x1024 : 12; // [11:0]
-        unsigned int Reserved_12_15 : 4; // [15:12]
-        unsigned int post_cke_x1024 : 10; // [25:16]
-        unsigned int Reserved_26_29 : 4; // [29:26]
-        unsigned int skip_dram_init : 2; // [31:30]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_INIT0_U;
-
-typedef union {
-    struct {
-        unsigned int dfi_init_complete_en : 1; // [0]
-        unsigned int phy_dbi_mode : 1; // [1]
-        unsigned int dfi_data_cs_polarity : 1; // [2]
-        unsigned int Reserved_3_3 : 1; // [3]
-        unsigned int ctl_idle_en : 1; // [4]
-        unsigned int dfi_init_start : 1; // [5]
-        unsigned int Reserved_6_6 : 1; // [6]
-        unsigned int lp_optimized_write : 1; // [7]
-        unsigned int dfi_frequency : 5; // [12:8]
-        unsigned int Reserved_13_31 : 19; // [31:13]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_DFIMISC_U;
-
-typedef union {
-    struct {
-        unsigned int dfi_init_complete : 1; // [0]
-        unsigned int dfi_lp_ack : 1; // [1]
-        unsigned int Reserved_2_31 : 30; // [31:2]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_DFISTAT_U;
-
-typedef union {
-    struct {
-        unsigned int dm_en : 1; // [0]
-        unsigned int wr_dbi_en : 1; // [1]
-        unsigned int rd_dbi_en : 1; // [2]
-        unsigned int Reserved_3_31 : 29; // [31:3]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_DBICTL_U;
-
-typedef union {
-    struct {
-        unsigned int sw_done : 1; // [0]
-        unsigned int Reserved_1_31 : 31; // [31:1]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_SWCTL_U;
-
-typedef union {
-    struct {
-        unsigned int sw_done_ack : 1; // [0]
-        unsigned int Reserved_1_31 : 31; // [31:1]
-    };
-    unsigned int u32;
-} DWC_DDR_UMCTL2_C_STRUCT_SWSTAT_U;
-
-typedef union {
     volatile DWC_DDR_UMCTL2_C_STRUCT_STAT_U dwc_ddr_umctl2_c_struct_stat;    // 0x4
-    volatile DWC_DDR_UMCTL2_C_STRUCT_MRCTRL0_U dwc_ddr_umctl2_c_struct_mrctrl0;    // 0x10
-    volatile DWC_DDR_UMCTL2_C_STRUCT_MRCTRL1_U dwc_ddr_umctl2_c_struct_mrctrl1;    // 0x14
     volatile DWC_DDR_UMCTL2_C_STRUCT_PWRCTL_U dwc_ddr_umctl2_c_struct_pwrctl;    // 0x30
-    volatile DWC_DDR_UMCTL2_C_STRUCT_INIT0_U dwc_ddr_umctl2_c_struct_init0;    // 0xd0
-    volatile DWC_DDR_UMCTL2_C_STRUCT_DFIMISC_U dwc_ddr_umctl2_c_struct_dfimisc;    // 0x1b0
-    volatile DWC_DDR_UMCTL2_C_STRUCT_DFISTAT_U dwc_ddr_umctl2_c_struct_dfistat;    // 0x1bc
-    volatile DWC_DDR_UMCTL2_C_STRUCT_SWCTL_U dwc_ddr_umctl2_c_struct_swctl;    // 0x320
-    volatile DWC_DDR_UMCTL2_C_STRUCT_SWSTAT_U dwc_ddr_umctl2_c_struct_swstat;    // 0x324
 } DWC_DDR_UMCTL2_C_STRUCT_REG_S;
 
 #endif
