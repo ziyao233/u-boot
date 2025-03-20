@@ -2,7 +2,6 @@
 #include <linux/sizes.h>
 #include "common_lib.h"
 #include "ddr_common_func.h"
-#include "ddr_retention.h"
 #include "pinmux.h"
 
 DDR_SYSREG_REG_SW_REG_S ddr_sysreg;

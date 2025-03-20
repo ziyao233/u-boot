@@ -1,7 +1,6 @@
 #include "common_lib.h"
 #include "pinmux.h"
 #include "ddr_common_func.h"
-#include "ddr_retention.h"
 #include "lpddr4_init.h"
 
 extern void lp4_phy_train1d2d(enum DDR_TYPE type, int speed, enum DDR_BITWIDTH bits);
@@ -27,7 +26,7 @@ void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH 
 
   lp4_phy_train1d2d(type, speed, bits);
 
-  dwc_ddrphy_phyinit_regInterface(saveRegs);
+//  dwc_ddrphy_phyinit_regInterface(saveRegs);
 
   ctrl_en(bits);
 
