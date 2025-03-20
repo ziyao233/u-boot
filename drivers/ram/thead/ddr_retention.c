@@ -989,19 +989,6 @@ static const uint32_t RetRegList_addr[934] =
     0x13840,
 };
 
-void dwc_ddr_misc_regu_save(void)
-{
-    ddr_Regu_Config->misc_reg_num =  ARRAY_SIZE(MiscRegList);
-    Reg_Misc_Addr_Val_t* misc_addr_t =  (Reg_Misc_Addr_Val_t*)((char*)ddr_Regu_Config +  64);
-    for(int i = 0; i < ddr_Regu_Config->misc_reg_num; i++) {
-        misc_addr_t[i].Address =  MiscRegList[i] & 0xffffffff;
-        misc_addr_t[i].Value = rd(MiscRegList[i]);
-#ifdef CONFIG_DDR_MSG
-        DDR_DEBUG("misc_reg_addr_value:%d data:%d\n", misc_addr_t[i].Address, misc_addr_t[i].Value);
-#endif
-    }
-}
-
 int dwc_ddrphy_phyinit_regInterface(regInstr myRegInstr) {
     int regIndx=0;
     uint16_t data;
