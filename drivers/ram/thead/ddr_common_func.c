@@ -851,14 +851,6 @@ void lpddr4_enter_selfrefresh(int pwdn_en,int dis_dram_clk,int mode) {
     ddr_sysreg.ddr_sysreg_registers_struct_ddr_cfg0.rg_ctl_ddr_usw_rst_reg |= 0x1FA;
     ddr_sysreg_wr(DDR_CFG0,ddr_sysreg.ddr_sysreg_registers_struct_ddr_cfg0.u32);
   }
-
-void ddr_soc_pll_disable () {
-  ddr_sysreg_wr(DDR_CFG0+0x18,0x00000);   //core clock gating enable
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x4b000000); //Reset SOC PLL
-#ifdef CONFIG_DDR_MSG
-  printf("DDR SOC PLL PowerDown \n");
-#endif
-}
 void lpddr4_auto_selref(void)
 {
   ddr_sysreg_wr(DDR_CFG1,0xa0000);   //remove core clock after xx
