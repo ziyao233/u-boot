@@ -2,8 +2,6 @@
 #include "pinmux.h"
 
 void dq_pinmux (enum DDR_BITWIDTH bits) {
-ddr_phy_broadcast_en(0);    
-
 ddr_phy0_reg_wr(0x100a0,0x1);
 ddr_phy0_reg_wr(0x100a1,0x5);
 ddr_phy0_reg_wr(0x100a2,0x3);
@@ -76,8 +74,6 @@ ddr_phy1_reg_wr(0x130a4,0x2);
 ddr_phy1_reg_wr(0x130a5,0x1);
 ddr_phy1_reg_wr(0x130a6,0x5);
 ddr_phy1_reg_wr(0x130a7,0x6);
-
-ddr_phy_broadcast_en(1);    
 }
 
 }

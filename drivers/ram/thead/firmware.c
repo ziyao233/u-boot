@@ -34416,13 +34416,9 @@ ddr_phy_reg_wr(0xd0000,0x1);
 ddr_phy_reg_wr(0xd0099,0x9);
 ddr_phy_reg_wr(0xd0099,0x1);
 ddr_phy_reg_wr(0xd0099,0x0);
-#ifndef CONFIG_DDR_H32_MODE
-ddr_phy_broadcast_en(0);
-#endif         
 dwc_ddrphy_phyinit_userCustom_G_waitFwDone(0);
 #ifndef CONFIG_DDR_H32_MODE
 dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(0);
-ddr_phy_broadcast_en(1);
 #endif         
 ddr_phy_reg_wr(0xd0099,0x1);
 ddr_phy_reg_wr(0xd0000,0x0);
@@ -34460,13 +34456,9 @@ ddr_phy_reg_wr(0xd0000,0x1);
 ddr_phy_reg_wr(0xd0099,0x9);
 ddr_phy_reg_wr(0xd0099,0x1);
 ddr_phy_reg_wr(0xd0099,0x0);
-#ifndef CONFIG_DDR_H32_MODE
-ddr_phy_broadcast_en(0);
-#endif         
 dwc_ddrphy_phyinit_userCustom_G_waitFwDone(1);
 #ifndef CONFIG_DDR_H32_MODE
 dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(1);
-ddr_phy_broadcast_en(1);
 #endif         
 ddr_phy_reg_wr(0xd0099,0x1);
 ddr_phy_reg_wr(0xd0000,0x0);
@@ -35057,9 +35049,6 @@ ddr_phy_reg_wr(0x20089,0x1);
 ddr_phy_reg_wr(0x20088,0x19);
 ddr_phy_reg_wr(0xc0080,0x2);
 ddr_phy_reg_wr(0xd0000,0x1);
-#ifndef CONFIG_DDR_H32_MODE
-ddr_phy_broadcast_en(0);
-#endif
 #ifdef CONFIG_DDR_MSG
 ddr_phy0_reg_wr(0xd0000,0x0);
 ddr_phy0_reg_wr(0xc0080,0x3);

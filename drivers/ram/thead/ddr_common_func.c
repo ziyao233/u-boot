@@ -109,14 +109,6 @@ void ddr_phy1_reg_wr(unsigned long int addr,unsigned int wr_data) {
 
 }
 
-void ddr_phy_broadcast_en(int enable) {
-    //ddr_sysreg.ddr_sysreg_registers_struct_ddr_cfg0.u32 = ddr_sysreg_rd(DDR_CFG0);
-    //ddr_sysreg.ddr_sysreg_registers_struct_ddr_cfg0.rg_broadcast_mode = enable;
-    //ddr_sysreg_wr(DDR_CFG0,ddr_sysreg.ddr_sysreg_registers_struct_ddr_cfg0.u32);
-    ddr_sysreg_rd(DDR_CFG0);
-    ddr_sysreg_rd(DDR_CFG0);
-}
-
 unsigned int ddr_phy1_reg_rd(unsigned long int addr) {
     //unsigned long int ddr_phy_sel,addr_low,rd_data;
     unsigned int rd_data;

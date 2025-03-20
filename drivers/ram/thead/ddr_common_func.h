@@ -27,7 +27,6 @@ void ddr_phy1_reg_wr(unsigned long int addr,unsigned int wr_data);
 unsigned int ddr_phy_reg_rd(unsigned long int addr);
 unsigned int ddr_phy0_reg_rd(unsigned long int addr);
 unsigned int ddr_phy1_reg_rd(unsigned long int addr);
-void ddr_phy_broadcast_en(int enable);
 void lp4_mrw(int addr, int wdata,int dch, int rank);
 int lp4_mrr(int addr,int dch, int rank);
 int lp4_set_ron(int ron);
