@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2025, Yao Zi <ziyao@disroot.org>
 
+obj-y += cache.o
 obj-y += cpu.o
 obj-y += dram.o
 obj-y += console.o
