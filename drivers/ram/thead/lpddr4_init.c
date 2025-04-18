@@ -1,5 +1,4 @@
 #include "common_lib.h"
-#include "pinmux.h"
 #include "ddr_common_func.h"
 #include "lpddr4_init.h"
 
