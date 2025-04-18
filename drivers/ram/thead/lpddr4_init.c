@@ -1,12 +1,11 @@
 #include "common_lib.h"
 #include "ddr_common_func.h"
 #include "lpddr4_init.h"
+#include "waitfwdone.h"
 
 #include <binman.h>
 #include <binman_sym.h>
 #include <linux/bitfield.h>
-
-extern void lp4_phy_train1d2d(enum DDR_TYPE type, int speed, enum DDR_BITWIDTH bits);
 
 #pragma pack(push, 1)
 
@@ -26,7 +25,7 @@ struct th1520_ddr_fw {
 
 		struct th1520_ddr_range {
 			uint32_t opaddr;
-			uint32_t size;
+			uint32_t num;
 			uint16_t data[];
 		} range;
 	} cfgs[];
@@ -51,6 +50,8 @@ struct th1520_ddr_fw {
 #define TH1520_DDR_CFG_PHY1	1
 #define TH1520_DDR_CFG_PHY	2
 #define TH1520_DDR_CFG_RANGE	3
+#define TH1520_DDR_CFG_WAITFW0	4
+#define TH1520_DDR_CFG_WAITFW1	5
 
 binman_sym_declare(ulong, ddr_fw, image_pos);
 
@@ -58,7 +59,7 @@ static int lpddr4_load_firmware(void)
 {
 	struct th1520_ddr_fw *fw = (void*)binman_sym(ulong, ddr_fw, image_pos);
 	union th1520_ddr_cfg *cfg;
-	size_t i;
+	size_t i, j;
 
 	/* TODO: validate magic */
 
@@ -68,24 +69,34 @@ static int lpddr4_load_firmware(void)
 
 		switch (op) {
 		case TH1520_DDR_CFG_PHY0:
-			printf("PHY0: addr = 0x%x, data = 0x%x\n",
-			       addr, cfg->phy.data);
 			ddr_phy0_reg_wr(addr, cfg->phy.data);
 			break;
 		case TH1520_DDR_CFG_PHY1:
-			printf("PHY1: addr = 0x%x, data = 0x%x\n",
-			       addr, cfg->phy.data);
 			ddr_phy1_reg_wr(addr, cfg->phy.data);
 			break;
+		case TH1520_DDR_CFG_PHY:
+			ddr_phy_reg_wr(addr, cfg->phy.data);
+			break;
+		case TH1520_DDR_CFG_RANGE:
+			for (j = 0; j < cfg->range.num; j++)
+				ddr_phy_reg_wr(addr + j, cfg->range.data[j]);
+			break;
+		case TH1520_DDR_CFG_WAITFW0:
+			dwc_ddrphy_phyinit_userCustom_G_waitFwDone(0);
+			break;
+		case TH1520_DDR_CFG_WAITFW1:
+			dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(0);
+			break;
 		default:
-			printf("%s: unknown operation %d\n", __func__, op);
 			break;
 		}
 
-		cfg = (union th1520_ddr_cfg *)(&cfg->phy + 1);
+		if (op == TH1520_DDR_CFG_RANGE)
+			cfg = (void *)cfg + sizeof(cfg->range) +
+				      cfg->range.num * sizeof(uint16_t);
+		else
+			cfg = (union th1520_ddr_cfg *)(&cfg->phy + 1);
 	}
-
-	printf("%s: firmware loaded\n", __func__);
 
 	return 0;
 }
@@ -108,8 +119,6 @@ void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH 
 	de_assert_other_reset_ddr();
 
 	lpddr4_load_firmware();
-
-	lp4_phy_train1d2d(type, speed, bits);
 
 	ctrl_en(bits);
 
