@@ -3,177 +3,98 @@
 
 unsigned int get_mails(void)
 {
-    unsigned int read;
-    unsigned int msg0;
-    unsigned int msg1;
-	
-	//wait ack
-	read = 0x1;
-	do{
-        //read = (unsigned int)(*(volatile unsigned short*)(0xfe7a0008));
-        read = ddr_phy_reg_rd(0xd0004);
-    }while((read&0x1) == 1);
+	unsigned int read, msg0, msg1;
 
-	//read msg
-    //msg0 = (unsigned int)(*(volatile unsigned short*)(0xfe7a0064));
-    msg0 = ddr_phy_reg_rd(0xd0032);
-	//msg1 = (unsigned int)(*(volatile unsigned short*)(0xfe7a0068));
+	// wait ack
+	read = 0x1;
+	do {
+		read = ddr_phy_reg_rd(0xd0004);
+	} while ((read & 0x1) == 1);
+
+	// read msg
+	msg0 = ddr_phy_reg_rd(0xd0032);
 	msg1 = ddr_phy_reg_rd(0xd0034);
-	
-   //write-back
-   //*(volatile unsigned short*)(0xfe7a0062) = 0;
-   ddr_phy0_reg_wr(0xd0031,0);
-   
-   //wait ack end
-   read = 0x0;
-	do{
-        //read = (unsigned int)(*(volatile unsigned short*)(0xfe7a0008));
-        read = ddr_phy_reg_rd(0xd0004);
-    }while((read&0x1) == 0);
-	
-	//re-enable
-	//*(volatile unsigned short*)(0xfe7a0062) = 1;
-	ddr_phy0_reg_wr(0xd0031,1);
-	
-	return (msg0 + (msg1<<16));//{uctDATwriteonlyshadow,uctwriteonlyshadow}
+
+	// write-back
+	ddr_phy0_reg_wr(0xd0031, 0);
+
+	// wait ack end
+	read = 0x0;
+	do {
+		read = ddr_phy_reg_rd(0xd0004);
+	} while ((read & 0x1) == 0);
+
+	// re-enable
+	ddr_phy0_reg_wr(0xd0031, 1);
+
+	// { uctDATwriteonlyshadow, uctwriteonlyshadow }
+	return (msg0 + (msg1 << 16));
 }
 
 unsigned int get_phy1_mails(void)
 {
-    unsigned int read;
-    unsigned int msg0;
-    unsigned int msg1;
+	unsigned int read, msg0, msg1;
 
-	//wait ack
+	// wait ack
 	read = 0x1;
-	do{
-        //read = (unsigned int)(*(volatile unsigned short*)(0xfe7a0008));
-        read = ddr_phy1_reg_rd(0xd0004);
-    }while((read&0x1) == 1);
+	do {
+		read = ddr_phy1_reg_rd(0xd0004);
+	} while ((read & 0x1) == 1);
 
-	//read msg
-    //msg0 = (unsigned int)(*(volatile unsigned short*)(0xfe7a0064));
-    msg0 = ddr_phy1_reg_rd(0xd0032);
-	//msg1 = (unsigned int)(*(volatile unsigned short*)(0xfe7a0068));
+	// read msg
+	msg0 = ddr_phy1_reg_rd(0xd0032);
 	msg1 = ddr_phy1_reg_rd(0xd0034);
 
-   //write-back
-   //*(volatile unsigned short*)(0xfe7a0062) = 0;
-   ddr_phy1_reg_wr(0xd0031,0);
+	// write-back
+	ddr_phy1_reg_wr(0xd0031, 0);
 
-   //wait ack end
-   read = 0x0;
-	do{
-        //read = (unsigned int)(*(volatile unsigned short*)(0xfe7a0008));
-        read = ddr_phy1_reg_rd(0xd0004);
-    }while((read&0x1) == 0);
+	// wait ack end
+	read = 0x0;
+	do {
+		read = ddr_phy1_reg_rd(0xd0004);
+	} while ((read & 0x1) == 0);
 
-	//re-enable
-	//*(volatile unsigned short*)(0xfe7a0062) = 1;
+	// re-enable
 	ddr_phy1_reg_wr(0xd0031,1);
 
-	return (msg0 + (msg1<<16));//{uctDATwriteonlyshadow,uctwriteonlyshadow}
+	// { uctDATwriteonlyshadow, uctwriteonlyshadow }
+	return (msg0 + (msg1 << 16));
 }
 
-void dwc_ddrphy_phyinit_userCustom_G_waitFwDone(unsigned char train2d) {
-
-unsigned int train_result;
-
-unsigned int stream_msg[32],i;
-
-train_result = 0x1;
-while(((train_result&0xffff)!=0x7) & ((train_result&0xffff)!=0xff))
+void dwc_ddrphy_phyinit_userCustom_G_waitFwDone(unsigned char train2d)
 {
-    train_result = get_mails();
-    #ifdef DDR_FW_DETAIL_MSG
-    //printf("\n");
-    #endif
+	unsigned int train_result, msg_size, tmp, i;
 
-    #ifdef DDR_FW_STAGE_MSG
-    msg_display(train_result,0x0);
-    #else
-    if((train_result&0xff)==0x7){
-#ifdef CONFIG_DDR_MSG
-       printf("PHY0 DDR_INIT_OK\n");
-#endif
-    }
-    else{
-       if((train_result&0xff)==0xff){
-          printf("PHY0 %s DDR_INIT_ERR\n", train2d?"train2d":"");
-          while(1);
-	} else {	
-       //printf("PHY0 DDR_INIT_STAGE is %x \n",train_result&&0xff);
+	train_result = 0x1;
+	/* 0x07 is okay, 0xff is error, 0x08 is a stream message */
+	while(((train_result & 0xffff) != 0x7) &
+	      ((train_result & 0xffff) != 0xff)) {
+		train_result = get_mails();
+
+		if((train_result & 0xffff) == 0x8){
+			msg_size = get_mails() & 0xffff; // msg first byte
+
+			for(i = 0; i < msg_size; i++)
+				tmp = get_mails();
+		}
 	}
-    }
-    #endif
-
-    //Steam MSG
-    if((train_result & 0xffff) == 0x8){
-        stream_msg[0] = get_mails(); //msg first byte
-
-        for(i=1;i<=(stream_msg[0]&0xffff);i++){
-            stream_msg[i] = get_mails();
-        }
-       //printf("ST_MSG: CODE=%x, ",stream_msg[0]);
-       #ifdef DDR_FW_DETAIL_MSG
-       st_msg_display(train2d,stream_msg);
-       //st_msg_display(train2d,stream_msg[0]);
-       #endif
-       //for(i=1;i<=(stream_msg[0]&0xffff);i++){
-       //     printf("ST_MSG: DATA%d = %x\n",i,stream_msg[i]);
-       //}
-     }
- }
 }
 
-
-void dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(unsigned char train2d) {
-
-unsigned int train_result;
-
-unsigned int stream_msg[32],i;
-
-train_result = 0x1;
-while(((train_result&0xffff)!=0x7) & ((train_result&0xffff)!=0xff))
+void dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(unsigned char train2d)
 {
-    train_result = get_phy1_mails();
-    #ifdef DDR_FW_DETAIL_MSG
-    //printf("\n");
-    #endif
+	unsigned int train_result, msg_size, tmp, i;
 
-    #ifdef DDR_FW_STAGE_MSG
-    msg_display(train_result,0x1);
-    #else
-    if((train_result&0xff)==0x7) {
-#ifdef CONFIG_DDR_MSG
-       printf("PHY1 DDR_INIT_OK\n");
-#endif
-     }
-    else{
-       if((train_result&0xff)==0xff) {
-          printf("PHY1 %s DDR_INIT_ERR\n", train2d?"train2d":"");
-          while(1);
-       } else {
-          //printf("PHY1 DDR_INIT_STAGE is %x \n",train_result&&0xff);
-       }
-    }
-    #endif
+	train_result = 0x1;
+	/* 0x07 is okay, 0xff is error, 0x08 is a stream message */
+	while(((train_result & 0xffff) != 0x7) &
+	      ((train_result & 0xffff) != 0xff)) {
+		train_result = get_phy1_mails();
 
-    //Steam MSG
-    if((train_result & 0xffff) == 0x8){
-        stream_msg[0] = get_phy1_mails(); //msg first byte
+		if((train_result & 0xffff) == 0x8){
+			msg_size = get_phy1_mails() & 0xffff; // msg first byte
 
-        for(i=1;i<=(stream_msg[0]&0xffff);i++){
-            stream_msg[i] = get_phy1_mails();
-        }
-       //printf("ST_MSG: CODE=%x, ",stream_msg[0]);
-       #ifdef DDR_FW_DETAIL_MSG
-       st_msg_display(train2d,stream_msg);
-       //st_msg_display(train2d,stream_msg[0]);
-       #endif
-       //for(i=1;i<=(stream_msg[0]&0xffff);i++){
-       //     printf("ST_MSG: DATA%d = %x\n",i,stream_msg[i]);
-       //}
-     }
- }
+			for(i = 0; i < msg_size; i++)
+				tmp = get_phy1_mails();
+		}
+	}
 }
