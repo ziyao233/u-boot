@@ -16,6 +16,11 @@
 	u-boot-spl {
 	};
 
+	ddr-fw {
+		filename = "th1520-ddr-firmware.bin";
+		type = "blob-ext";
+	};
+
 	fit {
 		offset = <CONFIG_SPL_PAD_TO>;
 
@@ -33,8 +38,7 @@
 				compression = "none";
 				load = /bits/ 64 <CONFIG_TEXT_BASE>;
 
-				uboot_blob: blob-ext {
-					filename = "u-boot-dtb.bin";
+				uboot_blob: u-boot {
 				};
 			};
 		};
