@@ -14,66 +14,10 @@ DDR_SYSREG_REG_SW_REG_S ddr_sysreg;
 #define CONFIG_DDR_RANK_SIZE SZ_4G
 #endif
 
-#define rd16(addr)		readl((void *)(addr))
+#define rd16(addr)		readw((void *)(addr))
 #define rd(addr)		readl((void *)(addr))
 #define wr16(addr, value)	writew(value, (void *)(addr))
 #define wr(addr, value)		writel(value, (void *)(addr))
-
-unsigned long get_ddr_density() {
-    int div =1, mul=1;
-#ifdef CONFIG_DDR_DUAL_RANK
-	mul = 2;
-#endif
-#ifdef CONFIG_DDR_DDP
-	mul *= 2;
-#endif
-#ifdef CONFIG_DDR_H32_MODE
-    div = 2;
-#endif
-	return CONFIG_DDR_RANK_SIZE*mul/div;
-}
-
-enum DDR_TYPE get_ddr_type() {
-    return DDR_TYPE_LPDDR4X;
-}
-
-int get_ddr_rank_number() {
-#ifdef CONFIG_DDR_SINGLE_RANK
-	return 1;
-#elif defined CONFIG_DDR_DUAL_RANK
-	return 2;
-#else
-#ifdef CONFIG_DDR_MSG
-	DDR_DEBUG("unsupported ddr rank type!!!\n");
-#endif
-    return 0;
-#endif
-}
-
-int get_ddr_freq() {
-#ifdef CONFIG_DDR_4266
-    return 4266;
-#elif CONFIG_DDR_3733
-    return 3733;
-#elif CONFIG_DDR_3200
-    return 3200;
-#elif CONFIG_DDR_2133
-	return 2133;
-#else
-    printf("unsupport lpddr4 freq!!!\n");
-    return -1;
-#endif
-}
-
-enum DDR_BITWIDTH get_ddr_bitwidth() {
-#ifdef CONFIG_DDR_H32_MODE
-    return DDR_BITWIDTH_32;
-#elif CONFIG_DDR_H16_MODE
-    return DDR_BITWIDTH_16;
-#else
-    return DDR_BITWIDTH_64;
-#endif
-}
 
 void ddr_sysreg_wr(unsigned long int addr,unsigned int wr_data) {
   wr(addr+DDR_SYSREG_BADDR,wr_data);
@@ -111,28 +55,6 @@ void ddr_phy1_reg_wr(unsigned long int addr,unsigned int wr_data) {
     addr<<=1;
     wr16(_DDR_PHY1_BADDR+addr, wr_data);
 
-}
-
-unsigned int ddr_phy1_reg_rd(unsigned long int addr) {
-    //unsigned long int ddr_phy_sel,addr_low,rd_data;
-    unsigned int rd_data;
-    addr<<=1;
-    rd_data=rd16(_DDR_PHY1_BADDR+addr);
-    return rd_data;
-}
-unsigned int ddr_phy0_reg_rd(unsigned long int addr) {
-    //unsigned long int ddr_phy_sel,addr_low,rd_data;
-    unsigned int rd_data;
-    addr<<=1;
-    rd_data=rd16(_DDR_PHY_BADDR+addr);
-    return rd_data;
-}
-unsigned int ddr_phy_reg_rd(unsigned long int addr) {
-    //unsigned long int ddr_phy_sel,addr_low,rd_data;
-    unsigned int rd_data;
-    addr<<=1;
-    rd_data=rd16(_DDR_PHY_BADDR+addr);
-    return rd_data;
 }
 
   void enable_axi_port(int port) {

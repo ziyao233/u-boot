@@ -1,12 +1,12 @@
 #include "common_lib.h"
 #include "lpddr4_init.h"
-#include "waitfwdone.h"
 
 #include <binman.h>
 #include <binman_sym.h>
 #include <dm.h>
 #include <init.h>
 #include <linux/bitfield.h>
+#include <linux/iopoll.h>
 #include <ram.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -57,6 +57,23 @@ struct th1520_ddr_fw {
 #define TH1520_DDR_CFG_WAITFW0	4
 #define TH1520_DDR_CFG_WAITFW1	5
 
+#define TH1520_PHY_MSG_TIMEOUT_US	1000000
+
+#define TH1520_DDR_REG(regid)		((regid) * 2)
+
+/* UctShadowRegs */
+#define TH1520_PHY_MSG_STATUS		TH1520_DDR_REG(0xd0004)
+#define  TH1520_PHY_MSG_STATUS_EMPTY	BIT(0)
+/* DctWriteProt */
+#define TH1520_PHY_MSG_ACK		TH1520_DDR_REG(0xd0031)
+#define  TH1520_PHY_MSG_ACK_EN		BIT(0)
+/* UctWriteOnlyShadow */
+#define TH1520_PHY_MSG_ID		TH1520_DDR_REG(0xd0032)
+#define  TH1520_PHY_MSG_ID_COMPLETION	0x7
+#define  TH1520_PHY_MSG_ID_ERROR	0xff
+/* UctDatWriteOnlyShadow */
+#define TH1520_PHY_MSG_DATA		TH1520_DDR_REG(0xd0034)
+
 struct th1520_ddr_priv {
 	void __iomem *phy0;
 	void __iomem *phy1;
@@ -66,12 +83,56 @@ struct th1520_ddr_priv {
 
 binman_sym_declare(ulong, ddr_fw, image_pos);
 
-static int lpddr4_load_firmware(struct th1520_ddr_fw *fw)
+int th1520_ddr_read_msg(void __iomem *phyreg, u16 *id, u16 *data)
+{
+	u32 tmp;
+	int ret;
+
+	ret = readw_poll_timeout(phyreg + TH1520_PHY_MSG_STATUS, tmp,
+				 !(tmp & TH1520_PHY_MSG_STATUS_EMPTY),
+				 TH1520_PHY_MSG_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	*id   = readw(phyreg + TH1520_PHY_MSG_ID);
+	*data = readw(phyreg + TH1520_PHY_MSG_DATA);
+
+	writew(0, phyreg + TH1520_PHY_MSG_ACK);
+
+	ret = readw_poll_timeout(phyreg + TH1520_PHY_MSG_STATUS, tmp,
+				 tmp & TH1520_PHY_MSG_STATUS_EMPTY,
+				 TH1520_PHY_MSG_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writew(TH1520_PHY_MSG_ACK_EN, phyreg + TH1520_PHY_MSG_ACK);
+
+	return 0;
+}
+
+static int th1520_phy_wait_pmu_completion(void __iomem *phyreg)
+{
+	u16 id, data;
+	int ret;
+
+	do {
+		ret = th1520_ddr_read_msg(phyreg, &id, &data);
+
+		if (ret)
+			return ret;
+	} while (id != TH1520_PHY_MSG_ID_COMPLETION	&&
+		 id != TH1520_PHY_MSG_ID_ERROR		&&
+		 !ret);
+
+	return id == TH1520_PHY_MSG_ID_COMPLETION ? ret : -EIO;
+}
+
+static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
+				struct th1520_ddr_fw *fw)
 {
 	union th1520_ddr_cfg *cfg;
 	size_t i, j;
-
-	/* TODO: validate magic */
+	int ret;
 
 	for (cfg = fw->cfgs, i = 0; i < fw->cfgnum; i++) {
 		uint32_t addr = FIELD_GET(TH1520_DDR_CFG_ADDR, cfg->opaddr);
@@ -92,13 +153,27 @@ static int lpddr4_load_firmware(struct th1520_ddr_fw *fw)
 				ddr_phy_reg_wr(addr + j, cfg->range.data[j]);
 			break;
 		case TH1520_DDR_CFG_WAITFW0:
-			dwc_ddrphy_phyinit_userCustom_G_waitFwDone(0);
+			ret = th1520_phy_wait_pmu_completion(priv->phy0);
+
+			if (ret) {
+				pr_err("phy 0 training failed: %d\n", ret);
+				return ret;
+			}
+
 			break;
 		case TH1520_DDR_CFG_WAITFW1:
-			dwc_ddrphy1_phyinit_userCustom_G_waitFwDone(0);
+			ret = th1520_phy_wait_pmu_completion(priv->phy1);
+
+			if (ret) {
+				pr_err("phy 1 training failed: %d\n", ret);
+				return ret;
+			}
+
 			break;
 		default:
-			break;
+			pr_err("Unknown DRAM configuration %d\n", op);
+
+			return -EOPNOTSUPP;
 		}
 
 		if (op == TH1520_DDR_CFG_RANGE)
@@ -127,7 +202,7 @@ void th1520_ddr_init(struct th1520_ddr_priv *priv)
 
 	de_assert_other_reset_ddr();
 
-	lpddr4_load_firmware(fw);
+	lpddr4_load_firmware(priv, fw);
 
 	ctrl_en(fw->bitwidth);
 
