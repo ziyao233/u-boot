@@ -365,6 +365,12 @@
 			status = "disabled";
 		};
 
+		ddrc: ddrc@fffd000000 {
+			compatible = "thead,th1520-ddrc";
+			reg = <0xff 0xfd000000 0x0 0x200d000>;
+			bootph-pre-ram;
+		};
+
 		timer4: timer@ffffc33000 {
 			compatible = "snps,dw-apb-timer";
 			reg = <0xff 0xffc33000 0x0 0x14>;
