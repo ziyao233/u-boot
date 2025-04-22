@@ -6,6 +6,7 @@
 #include <asm/io.h>
 #include <asm/spl.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/spl.h>
 #include <asm/arch/sysctl_regs.h>
 #include <cpu_func.h>
 #include <hang.h>
@@ -45,8 +46,7 @@ void board_init_f(ulong dummy)
 
 	preloader_console_init();
 
-	extern void init_ddr(void);
-	init_ddr();
+	spl_dram_init();
 
 	icache_enable();
 	dcache_enable();
