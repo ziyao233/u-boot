@@ -4,7 +4,12 @@
 
 #include <binman.h>
 #include <binman_sym.h>
+#include <dm.h>
+#include <init.h>
 #include <linux/bitfield.h>
+#include <ram.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 #pragma pack(push, 1)
 
@@ -127,3 +132,37 @@ void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH 
 
 	lpddr4_auto_selref();
 }
+
+static int th1520_ddr_probe(struct udevice *dev)
+{
+	(void)dev;
+
+	lpddr4_init(0, 2, 3733, 64);
+
+	return 0;
+}
+
+static int th1520_ddr_get_info(struct udevice *dev, struct ram_info *info)
+{
+	info->base = gd->ram_base;
+	info->size = gd->ram_size;
+
+	return 0;
+}
+
+static struct ram_ops th1520_ddr_ops = {
+	.get_info = th1520_ddr_get_info,
+};
+
+static const struct udevice_id th1520_ddr_ids[] = {
+	{ .compatible = "thead,th1520-ddrc" },
+	{ }
+};
+
+U_BOOT_DRIVER(th1520_ddr) = {
+	.name = "th1520_ddr",
+	.id = UCLASS_RAM,
+	.ops = &th1520_ddr_ops,
+	.of_match = th1520_ddr_ids,
+	.probe = th1520_ddr_probe,
+};
