@@ -1,4 +1,3 @@
-#include "common_lib.h"
 #include "ddr_common_func.h"
 
 unsigned int get_mails(void)

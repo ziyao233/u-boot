@@ -1,3 +1,4 @@
+#include <asm/io.h>
 #include <linux/delay.h>
 #include <linux/sizes.h>
 #include "common_lib.h"
@@ -12,6 +13,11 @@ DDR_SYSREG_REG_SW_REG_S ddr_sysreg;
 #ifndef CONFIG_DDR_RANK_SIZE
 #define CONFIG_DDR_RANK_SIZE SZ_4G
 #endif
+
+#define rd16(addr)		readl((void *)(addr))
+#define rd(addr)		readl((void *)(addr))
+#define wr16(addr, value)	writew(value, (void *)(addr))
+#define wr(addr, value)		writel(value, (void *)(addr))
 
 unsigned long get_ddr_density() {
     int div =1, mul=1;
