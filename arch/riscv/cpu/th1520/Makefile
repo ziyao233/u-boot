@@ -5,4 +5,5 @@
 obj-y += cache.o
 obj-y += cpu.o
 obj-y += dram.o
+obj-y += spl.o
 obj-y += console.o
