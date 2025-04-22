@@ -57,11 +57,17 @@ struct th1520_ddr_fw {
 #define TH1520_DDR_CFG_WAITFW0	4
 #define TH1520_DDR_CFG_WAITFW1	5
 
+struct th1520_ddr_priv {
+	void __iomem *phy0;
+	void __iomem *phy1;
+	void __iomem *ctrl;
+	void __iomem *sys;
+};
+
 binman_sym_declare(ulong, ddr_fw, image_pos);
 
-static int lpddr4_load_firmware(void)
+static int lpddr4_load_firmware(struct th1520_ddr_fw *fw)
 {
-	struct th1520_ddr_fw *fw = (void*)binman_sym(ulong, ddr_fw, image_pos);
 	union th1520_ddr_cfg *cfg;
 	size_t i, j;
 
@@ -105,26 +111,25 @@ static int lpddr4_load_firmware(void)
 	return 0;
 }
 
-void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH bits)
+void th1520_ddr_init(struct th1520_ddr_priv *priv)
 {
-	//4266 3733 3200 2133
-	//Others RSVD
-	pll_config(speed);
+	struct th1520_ddr_fw *fw = (void *)binman_sym(ulong, ddr_fw, image_pos);
 
-	deassert_pwrok_apb(bits);
+	/* TODO: rewrite frequency-related code */
+	pll_config(fw->freq == TH1520_DDR_FREQ_3733 ? 3733 : 0);
 
-	//4266 3733 3200 2133
-	//Others RSVD
-	ctrl_init(rank_num, speed);
+	deassert_pwrok_apb(fw->bitwidth);
 
-	//mode support: 16 32 64
-	addrmap(rank_num, bits);
+	ctrl_init(fw->ranknum, fw->freq == TH1520_DDR_FREQ_3733 ? 3733 : 0);
+
+	// mode support: 16 32 64
+	addrmap(fw->ranknum, fw->bitwidth);
 
 	de_assert_other_reset_ddr();
 
-	lpddr4_load_firmware();
+	lpddr4_load_firmware(fw);
 
-	ctrl_en(bits);
+	ctrl_en(fw->bitwidth);
 
 	enable_axi_port(0x1f);
 
@@ -135,9 +140,30 @@ void lpddr4_init(enum DDR_TYPE type, int rank_num, int speed, enum DDR_BITWIDTH 
 
 static int th1520_ddr_probe(struct udevice *dev)
 {
-	(void)dev;
+	struct th1520_ddr_priv *priv = dev_get_priv(dev);
+	fdt_addr_t addr;
 
-	lpddr4_init(0, 2, 3733, 64);
+	addr = dev_read_addr_name(dev, "phy-0");
+	priv->phy0 = (void __iomem *)addr;
+	if (addr == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	addr = dev_read_addr_name(dev, "phy-1");
+	priv->phy1 = (void __iomem *)addr;
+	if (addr == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	addr = dev_read_addr_name(dev, "ctrl");
+	priv->ctrl = (void __iomem *)addr;
+	if (addr == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	addr = dev_read_addr_name(dev, "sys");
+	priv->sys = (void __iomem *)addr;
+	if (addr == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	th1520_ddr_init(priv);
 
 	return 0;
 }
@@ -165,4 +191,5 @@ U_BOOT_DRIVER(th1520_ddr) = {
 	.ops = &th1520_ddr_ops,
 	.of_match = th1520_ddr_ids,
 	.probe = th1520_ddr_probe,
+	.priv_auto = sizeof(struct th1520_ddr_priv),
 };
