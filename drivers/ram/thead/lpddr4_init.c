@@ -63,6 +63,13 @@ struct th1520_ddr_fw {
 #define TH1520_SYS_PLL_TIMEOUT_US	30
 
 /* System configuration registers */
+#define TH1520_SYS_DDR_CFG0			0x00
+#define  TH1520_SYS_DDR_CFG0_APB_RSTN		BIT(4)
+#define  TH1520_SYS_DDR_CFG0_CTRL_RSTN		BIT(5)
+#define  TH1520_SYS_DDR_CFG0_PHY_PWROK_RSTN	BIT(6)
+#define  TH1520_SYS_DDR_CFG0_PHY_CORE_RSTN	BIT(7)
+#define  TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(n)	BIT(n + 4 + 4)
+
 #define TH1520_SYS_PLL_CFG0			0x08
 #define  TH1520_SYS_PLL_CFG0_POSTDIV2		GENMASK(26, 24)
 #define  TH1520_SYS_PLL_CFG0_POSTDIV1		GENMASK(22, 20)
@@ -246,6 +253,7 @@ static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
 static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 {
 	struct th1520_ddr_fw *fw = (void *)binman_sym(ulong, ddr_fw, image_pos);
+	u32 reset;
 	int ret;
 
 	ret = th1520_ddr_pll_config(priv->sys, fw->freq);
@@ -254,7 +262,14 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 		return ret;
 	}
 
-	deassert_pwrok_apb(fw->bitwidth);
+	reset = TH1520_SYS_DDR_CFG0_PHY_PWROK_RSTN;
+	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
+
+	reset |= TH1520_SYS_DDR_CFG0_PHY_CORE_RSTN;
+	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
+
+	reset |= TH1520_SYS_DDR_CFG0_APB_RSTN;
+	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
 
 	ctrl_init(fw->ranknum, fw->freq == TH1520_DDR_FREQ_3733 ? 3733 : 0);
 

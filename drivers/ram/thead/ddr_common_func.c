@@ -114,37 +114,6 @@ if(bits==64) {
 #endif
  }
 
- void deassert_pwrok_apb (enum DDR_BITWIDTH bits) {
-#if 0
-  ddr_sysreg_wr(DDR_CFG0,0x40);  // release PwrOkIn
-  ddr_sysreg_wr(DDR_CFG0,0x40);
-  ddr_sysreg_wr(DDR_CFG0,0x40);
-  ddr_sysreg_wr(DDR_CFG0,0x40);
-  ddr_sysreg_wr(DDR_CFG0,0x40);
-#endif
-  ddr_sysreg_wr(DDR_CFG0,0x40);
-
-#if 0
-  ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
-  ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
-  ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
-#endif
-  ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
-
-#if 0
-  ddr_sysreg_wr(DDR_CFG0,0xd0);  // release apb presetn
-  ddr_sysreg_wr(DDR_CFG0,0xd0);
-  ddr_sysreg_wr(DDR_CFG0,0xd0);
-  ddr_sysreg_wr(DDR_CFG0,0xd0);
-  ddr_sysreg_wr(DDR_CFG0,0xd0);
-#endif
-  ddr_sysreg_wr(DDR_CFG0,0xd0);
-  if(bits==32) {
-  ddr_sysreg_wr(DDR_CFG0,0xd2);
-  }
-
- }
-
  //void ctrl_init(int speed,int rank_num) {
  void ctrl_init(int rank_num, int speed) {
   wr(DBG1,0x00000001);
