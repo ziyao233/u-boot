@@ -59,8 +59,9 @@ struct th1520_ddr_fw {
 #define TH1520_DDR_CFG_WAITFW1	5
 
 /* Driver constants */
-#define TH1520_PHY_MSG_TIMEOUT_US	1000000
 #define TH1520_SYS_PLL_TIMEOUT_US	30
+#define TH1520_CTRL_INIT_TIMEOUT_US	100
+#define TH1520_PHY_MSG_TIMEOUT_US	1000000
 
 /* System configuration registers */
 #define TH1520_SYS_DDR_CFG0			0x00
@@ -85,6 +86,150 @@ struct th1520_ddr_fw {
 #define TH1520_SYS_PLL_STS		0x18
 #define  TH1520_SYS_PLL_STS_EN		BIT(16)
 #define  TH1520_SYS_PLL_STS_LOCKED	BIT(0)
+
+/* DDR Controller Registers */
+#define TH1520_CTRL_MSTR			0x0000
+#define TH1520_CTRL_STAT			0x0004
+#define TH1520_CTRL_MRCTRL0			0x0010
+#define TH1520_CTRL_MRCTRL1			0x0014
+#define TH1520_CTRL_MRSTAT			0x0018
+#define TH1520_CTRL_DERATEEN			0x0020
+#define TH1520_CTRL_DERATEINT			0x0024
+#define TH1520_CTRL_DERATECTL			0x002c
+#define TH1520_CTRL_PWRCTL			0x0030
+#define TH1520_CTRL_PWRTMG			0x0034
+#define TH1520_CTRL_HWLPCTL			0x0038
+#define TH1520_CTRL_RFSHCTL0			0x0050
+#define TH1520_CTRL_RFSHCTL1			0x0054
+#define TH1520_CTRL_RFSHCTL3			0x0060
+#define TH1520_CTRL_RFSHTMG			0x0064
+#define TH1520_CTRL_RFSHTMG1			0x0068
+#define TH1520_CTRL_CRCPARCTL0			0x00c0
+#define TH1520_CTRL_CRCPARSTAT			0x00cc
+#define TH1520_CTRL_INIT0			0x00d0
+#define TH1520_CTRL_INIT1			0x00d4
+#define TH1520_CTRL_INIT2			0x00d8
+#define TH1520_CTRL_INIT3			0x00dc
+#define TH1520_CTRL_INIT4			0x00e0
+#define TH1520_CTRL_INIT5			0x00e4
+#define TH1520_CTRL_INIT6			0x00e8
+#define TH1520_CTRL_INIT7			0x00ec
+#define TH1520_CTRL_DIMMCTL			0x00f0
+#define TH1520_CTRL_RANKCTL			0x00f4
+#define TH1520_CTRL_RANKCTL1			0x00f8
+#define TH1520_CTRL_DRAMTMG0			0x0100
+#define TH1520_CTRL_DRAMTMG1			0x0104
+#define TH1520_CTRL_DRAMTMG2			0x0108
+#define TH1520_CTRL_DRAMTMG3			0x010c
+#define TH1520_CTRL_DRAMTMG4			0x0110
+#define TH1520_CTRL_DRAMTMG5			0x0114
+#define TH1520_CTRL_DRAMTMG6			0x0118
+#define TH1520_CTRL_DRAMTMG7			0x011c
+#define TH1520_CTRL_DRAMTMG8			0x0120
+#define TH1520_CTRL_DRAMTMG12			0x0130
+#define TH1520_CTRL_DRAMTMG13			0x0134
+#define TH1520_CTRL_DRAMTMG14			0x0138
+#define TH1520_CTRL_DRAMTMG17			0x0144
+#define TH1520_CTRL_ZQCTL0			0x0180
+#define TH1520_CTRL_ZQCTL1			0x0184
+#define TH1520_CTRL_ZQCTL2			0x0188
+#define TH1520_CTRL_ZQSTAT			0x018c
+#define TH1520_CTRL_DFITMG0			0x0190
+#define TH1520_CTRL_DFITMG1			0x0194
+#define TH1520_CTRL_DFILPCFG0			0x0198
+#define TH1520_CTRL_DFIUPD0			0x01a0
+#define TH1520_CTRL_DFIUPD1			0x01a4
+#define TH1520_CTRL_DFIUPD2			0x01a8
+#define TH1520_CTRL_DFIMISC			0x01b0
+#define TH1520_CTRL_DFITMG2			0x01b4
+#define TH1520_CTRL_DFISTAT			0x01bc
+#define TH1520_CTRL_DBICTL			0x01c0
+#define TH1520_CTRL_DFIPHYMSTR			0x01c4
+#define TH1520_CTRL_ADDRMAP0			0x0200
+#define TH1520_CTRL_ADDRMAP1			0x0204
+#define TH1520_CTRL_ADDRMAP2			0x0208
+#define TH1520_CTRL_ADDRMAP3			0x020c
+#define TH1520_CTRL_ADDRMAP4			0x0210
+#define TH1520_CTRL_ADDRMAP5			0x0214
+#define TH1520_CTRL_ADDRMAP6			0x0218
+#define TH1520_CTRL_ADDRMAP7			0x021c
+#define TH1520_CTRL_ADDRMAP8			0x0220
+#define TH1520_CTRL_ADDRMAP9			0x0224
+#define TH1520_CTRL_ADDRMAP10			0x0228
+#define TH1520_CTRL_ADDRMAP11			0x022c
+#define TH1520_CTRL_ODTCFG			0x0240
+#define TH1520_CTRL_ODTMAP			0x0244
+#define TH1520_CTRL_SCHED			0x0250
+#define TH1520_CTRL_SCHED1			0x0254
+#define TH1520_CTRL_PERFHPR1			0x025c
+#define TH1520_CTRL_PERFLPR1			0x0264
+#define TH1520_CTRL_PERFWR1			0x026c
+#define TH1520_CTRL_SCHED3			0x0270
+#define TH1520_CTRL_SCHED4			0x0274
+#define TH1520_CTRL_DBG0			0x0300
+#define TH1520_CTRL_DBG1			0x0304
+#define TH1520_CTRL_DBGCAM			0x0308
+#define TH1520_CTRL_DBGCMD			0x030c
+#define TH1520_CTRL_DBGSTAT			0x0310
+#define TH1520_CTRL_SWCTL			0x0320
+#define TH1520_CTRL_SWSTAT			0x0324
+#define TH1520_CTRL_SWCTLSTATIC			0x0328
+#define TH1520_CTRL_POISONCFG			0x036c
+#define TH1520_CTRL_POISONSTAT			0x0370
+#define TH1520_CTRL_DERATESTAT			0x03f0
+#define TH1520_CTRL_PSTAT			0x03fc
+#define TH1520_CTRL_PCCFG			0x0400
+#define TH1520_CTRL_PCFGR_0			0x0404
+#define TH1520_CTRL_PCFGW_0			0x0408
+#define TH1520_CTRL_PCTRL_0			0x0490
+#define TH1520_CTRL_PCFGQOS0_0			0x0494
+#define TH1520_CTRL_PCFGQOS1_0			0x0498
+#define TH1520_CTRL_PCFGWQOS0_0			0x049c
+#define TH1520_CTRL_PCFGWQOS1_0			0x04a0
+#define TH1520_CTRL_PCFGR_1			0x04b4
+#define TH1520_CTRL_PCFGW_1			0x04b8
+#define TH1520_CTRL_PCTRL_1			0x0540
+#define TH1520_CTRL_PCFGQOS0_1			0x0544
+#define TH1520_CTRL_PCFGQOS1_1			0x0548
+#define TH1520_CTRL_PCFGWQOS0_1			0x054c
+#define TH1520_CTRL_PCFGWQOS1_1			0x0550
+#define TH1520_CTRL_PCFGR_2			0x0564
+#define TH1520_CTRL_PCFGW_2			0x0568
+#define TH1520_CTRL_PCTRL_2			0x05f0
+#define TH1520_CTRL_PCFGQOS0_2			0x05f4
+#define TH1520_CTRL_PCFGQOS1_2			0x05f8
+#define TH1520_CTRL_PCFGWQOS0_2			0x05fc
+#define TH1520_CTRL_PCFGWQOS1_2			0x0600
+#define TH1520_CTRL_PCFGR_3			0x0614
+#define TH1520_CTRL_PCFGW_3			0x0618
+#define TH1520_CTRL_PCTRL_3			0x06a0
+#define TH1520_CTRL_PCFGQOS0_3			0x06a4
+#define TH1520_CTRL_PCFGQOS1_3			0x06a8
+#define TH1520_CTRL_PCFGWQOS0_3			0x06ac
+#define TH1520_CTRL_PCFGWQOS1_3			0x06b0
+#define TH1520_CTRL_PCFGR_4			0x06c4
+#define TH1520_CTRL_PCFGW_4			0x06c8
+#define TH1520_CTRL_PCTRL_4			0x0750
+#define TH1520_CTRL_PCFGQOS0_4			0x0754
+#define TH1520_CTRL_PCFGQOS1_4			0x0758
+#define TH1520_CTRL_PCFGWQOS0_4			0x075c
+#define TH1520_CTRL_PCFGWQOS1_4			0x0760
+#define TH1520_CTRL_UMCTL2_VER_NUMBER		0x0ff0
+#define TH1520_CTRL_UMCTL2_VER_TYPE		0x0ff4
+#define TH1520_CTRL_DCH1_STAT			0x1b04
+#define TH1520_CTRL_DCH1_MRCTRL0		0x1b10
+#define TH1520_CTRL_DCH1_MRCTRL1		0x1b14
+#define TH1520_CTRL_DCH1_MRSTAT			0x1b18
+#define TH1520_CTRL_DCH1_DERATECTL		0x1b2c
+#define TH1520_CTRL_DCH1_PWRCTL			0x1b30
+#define TH1520_CTRL_DCH1_HWLPCTL		0x1b38
+#define TH1520_CTRL_DCH1_CRCPARCTL0		0x1bc0
+#define TH1520_CTRL_DCH1_ZQCTL2			0x1c88
+#define TH1520_CTRL_DCH1_DFISTAT		0x1cbc
+#define TH1520_CTRL_DCH1_ODTMAP			0x1d44
+#define TH1520_CTRL_DCH1_DBG1			0x1e04
+#define TH1520_CTRL_DCH1_DBGCMD			0x1e0c
+#define TH1520_CTRL_DCH1_DBGCAM			0x1e08
 
 /* PHY configuration registers */
 #define TH1520_DDR_PHY_REG(regid)	((regid) * 2)
@@ -145,6 +290,191 @@ static int th1520_ddr_pll_config(void __iomem *sysreg, unsigned int frequency)
 	writel(TH1520_SYS_PLL_STS_EN, sysreg + TH1520_SYS_PLL_STS);
 
 	return ret;
+}
+
+static int th1520_ddr_ctrl_init(void __iomem *ctrlreg, struct th1520_ddr_fw *fw)
+{
+	int ret;
+	u32 tmp;
+
+	writel(0x00000001, ctrlreg + TH1520_CTRL_DBG1);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PWRCTL);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_STAT, tmp,
+				 tmp == 0x00000000,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	if (fw->ranknum == 2)
+		writel(0x03080020, ctrlreg + TH1520_CTRL_MSTR);
+	else
+		return -EINVAL;
+
+	writel(0x00003030, ctrlreg + TH1520_CTRL_MRCTRL0);
+	writel(0x0002d90f, ctrlreg + TH1520_CTRL_MRCTRL1);
+
+	switch (fw->freq) {
+	case TH1520_DDR_FREQ_3733:
+		writel(0x000013f3, ctrlreg + TH1520_CTRL_DERATEEN);
+		writel(0x40000000, ctrlreg + TH1520_CTRL_DERATEINT);
+		writel(0x00000001, ctrlreg + TH1520_CTRL_DERATECTL);
+		writel(0x00000020, ctrlreg + TH1520_CTRL_PWRCTL);
+		writel(0x0040ae04, ctrlreg + TH1520_CTRL_PWRTMG);
+		writel(0x00430000, ctrlreg + TH1520_CTRL_HWLPCTL);
+		writel(0x00210004, ctrlreg + TH1520_CTRL_RFSHCTL0);
+		writel(0x000d0021, ctrlreg + TH1520_CTRL_RFSHCTL1);
+		writel(0x00000001, ctrlreg + TH1520_CTRL_RFSHCTL3);
+		writel(0x81c00084, ctrlreg + TH1520_CTRL_RFSHTMG);
+		writel(0x00540000, ctrlreg + TH1520_CTRL_RFSHTMG1);
+		writel(0x00000000, ctrlreg + TH1520_CTRL_CRCPARCTL0);
+		writel(0xc0020002, ctrlreg + TH1520_CTRL_INIT0);
+		writel(0x00010002, ctrlreg + TH1520_CTRL_INIT1);
+		writel(0x00001f00, ctrlreg + TH1520_CTRL_INIT2);
+		writel(0x00640036, ctrlreg + TH1520_CTRL_INIT3);
+		writel(0x00f20008, ctrlreg + TH1520_CTRL_INIT4);
+		writel(0x0004000b, ctrlreg + TH1520_CTRL_INIT5);
+		writel(0x00440012, ctrlreg + TH1520_CTRL_INIT6);
+		writel(0x0004001a, ctrlreg + TH1520_CTRL_INIT7);
+		writel(0x00000000, ctrlreg + TH1520_CTRL_DIMMCTL);
+		writel(0x0000ab9f, ctrlreg + TH1520_CTRL_RANKCTL);
+		writel(0x00000017, ctrlreg + TH1520_CTRL_RANKCTL1);
+		writel(0x1f263f28, ctrlreg + TH1520_CTRL_DRAMTMG0);
+		writel(0x00080839, ctrlreg + TH1520_CTRL_DRAMTMG1);
+		writel(0x08121d17, ctrlreg + TH1520_CTRL_DRAMTMG2);
+		writel(0x00d0e000, ctrlreg + TH1520_CTRL_DRAMTMG3);
+		writel(0x11040a12, ctrlreg + TH1520_CTRL_DRAMTMG4);
+		writel(0x02050e0e, ctrlreg + TH1520_CTRL_DRAMTMG5);
+		writel(0x01010008, ctrlreg + TH1520_CTRL_DRAMTMG6);
+		writel(0x00000502, ctrlreg + TH1520_CTRL_DRAMTMG7);
+		writel(0x00000101, ctrlreg + TH1520_CTRL_DRAMTMG8);
+		writel(0x00020000, ctrlreg + TH1520_CTRL_DRAMTMG12);
+		writel(0x0d100002, ctrlreg + TH1520_CTRL_DRAMTMG13);
+		writel(0x0000010c, ctrlreg + TH1520_CTRL_DRAMTMG14);
+		writel(0x03a50021, ctrlreg + TH1520_CTRL_ZQCTL0);
+		writel(0x02f00800, ctrlreg + TH1520_CTRL_ZQCTL1);
+		writel(0x00000000, ctrlreg + TH1520_CTRL_ZQCTL2);
+		writel(0x059f820c, ctrlreg + TH1520_CTRL_DFITMG0);
+		writel(0x000c0303, ctrlreg + TH1520_CTRL_DFITMG1);
+		writel(0x0351a101, ctrlreg + TH1520_CTRL_DFILPCFG0);
+		writel(0x00000011, ctrlreg + TH1520_CTRL_DFIMISC);
+		writel(0x00001f0c, ctrlreg + TH1520_CTRL_DFITMG2);
+		writel(0x00000007, ctrlreg + TH1520_CTRL_DBICTL);
+		writel(0x14000001, ctrlreg + TH1520_CTRL_DFIPHYMSTR);
+		writel(0x06090b40, ctrlreg + TH1520_CTRL_ODTCFG);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	writel(0x00400018, ctrlreg + TH1520_CTRL_DFIUPD0);
+	writel(0x00280032, ctrlreg + TH1520_CTRL_DFIUPD1);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DFIUPD2);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_ODTMAP);
+	writel(0x1f829b1c, ctrlreg + TH1520_CTRL_SCHED);
+	writel(0x4400b00f, ctrlreg + TH1520_CTRL_SCHED1);
+	writel(0x0f000001, ctrlreg + TH1520_CTRL_PERFHPR1);
+	writel(0x0f00007f, ctrlreg + TH1520_CTRL_PERFLPR1);
+	writel(0x0f00007f, ctrlreg + TH1520_CTRL_PERFWR1);
+	writel(0x00000208, ctrlreg + TH1520_CTRL_SCHED3);
+	writel(0x08400810, ctrlreg + TH1520_CTRL_SCHED4);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DBG0);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DBG1);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DBGCMD);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTL);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_SWCTLSTATIC);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_POISONCFG);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PCTRL_0);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PCTRL_1);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PCTRL_2);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PCTRL_3);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_PCTRL_4);
+	writel(0x00003030, ctrlreg + TH1520_CTRL_DCH1_MRCTRL0);
+	writel(0x0002d90f, ctrlreg + TH1520_CTRL_DCH1_MRCTRL1);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_DCH1_DERATECTL);
+	writel(0x00000020, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
+	writel(0x00430002, ctrlreg + TH1520_CTRL_DCH1_HWLPCTL);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_CRCPARCTL0);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_ZQCTL2);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_ODTMAP);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_DBG1);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_DBGCMD);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_RFSHCTL3, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000010, ctrlreg + TH1520_CTRL_PCCFG);
+	writel(0x0000500f, ctrlreg + TH1520_CTRL_PCFGR_0);
+	writel(0x0000500f, ctrlreg + TH1520_CTRL_PCFGW_0);
+	writel(0x00005020, ctrlreg + TH1520_CTRL_PCFGR_1);
+	writel(0x0000501f, ctrlreg + TH1520_CTRL_PCFGW_1);
+	writel(0x0000501f, ctrlreg + TH1520_CTRL_PCFGR_2);
+	writel(0x0000503f, ctrlreg + TH1520_CTRL_PCFGW_2);
+	writel(0x000051ff, ctrlreg + TH1520_CTRL_PCFGR_3);
+	writel(0x000051ff, ctrlreg + TH1520_CTRL_PCFGW_3);
+	writel(0x0000503f, ctrlreg + TH1520_CTRL_PCFGR_4);
+	writel(0x0000503f, ctrlreg + TH1520_CTRL_PCFGW_4);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_PWRCTL);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DCH1_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DBG1);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_PWRCTL);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_PWRCTL);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_DBG1);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DCH1_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DCH1_PWRCTL, tmp,
+				 tmp == 0x00000020,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000020, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
+	writel(0x14000001, ctrlreg + TH1520_CTRL_DFIPHYMSTR);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_SWCTL);
+	writel(0x00000010, ctrlreg + TH1520_CTRL_DFIMISC);
+	writel(0x00000010, ctrlreg + TH1520_CTRL_DFIMISC);
+	writel(0x00000002, ctrlreg + TH1520_CTRL_DBG1);
+	writel(0x00000002, ctrlreg + TH1520_CTRL_DCH1_DBG1);
+
+	return 0;
 }
 
 static int th1520_ddr_read_msg(void __iomem *phyreg, u16 *id, u16 *data)
@@ -264,14 +594,16 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 
 	reset = TH1520_SYS_DDR_CFG0_PHY_PWROK_RSTN;
 	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
-
 	reset |= TH1520_SYS_DDR_CFG0_PHY_CORE_RSTN;
 	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
-
 	reset |= TH1520_SYS_DDR_CFG0_APB_RSTN;
 	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
 
-	ctrl_init(fw->ranknum, fw->freq == TH1520_DDR_FREQ_3733 ? 3733 : 0);
+	ret = th1520_ddr_ctrl_init(priv->ctrl, fw);
+	if (ret) {
+		pr_err("failed to initialize DDR controller: %d\n", ret);
+		return ret;
+	}
 
 	// mode support: 16 32 64
 	addrmap(fw->ranknum, fw->bitwidth);
