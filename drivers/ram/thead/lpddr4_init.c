@@ -37,6 +37,7 @@ struct th1520_ddr_fw {
 
 #pragma pack(pop)
 
+/* Firmware constants */
 #define TH1520_DDR_MAGIC	0x4452444445415448
 
 #define TH1520_DDR_TYPE_LPDDR4	0
@@ -57,22 +58,42 @@ struct th1520_ddr_fw {
 #define TH1520_DDR_CFG_WAITFW0	4
 #define TH1520_DDR_CFG_WAITFW1	5
 
+/* Driver constants */
 #define TH1520_PHY_MSG_TIMEOUT_US	1000000
+#define TH1520_SYS_PLL_TIMEOUT_US	30
 
-#define TH1520_DDR_REG(regid)		((regid) * 2)
+/* System configuration registers */
+#define TH1520_SYS_PLL_CFG0			0x08
+#define  TH1520_SYS_PLL_CFG0_POSTDIV2		GENMASK(26, 24)
+#define  TH1520_SYS_PLL_CFG0_POSTDIV1		GENMASK(22, 20)
+#define  TH1520_SYS_PLL_CFG0_FBDIV		GENMASK(19, 8)
+#define  TH1520_SYS_PLL_CFG0_REFDIV		GENMASK(5, 0)
+#define TH1520_SYS_PLL_CFG1			0x0c
+#define  TH1520_SYS_PLL_CFG1_RST		BIT(30)
+#define  TH1520_SYS_PLL_CFG1_FOUTPOSTDIVPD	BIT(27)
+#define  TH1520_SYS_PLL_CFG1_FOUT4PHASEPD	BIT(25)
+#define  Th1520_SYS_PLL_CFG1_DACPD		BIT(24)
+#define TH1520_SYS_PLL_CFG2		0x10
+#define TH1520_SYS_PLL_CFG3		0x14
+#define TH1520_SYS_PLL_STS		0x18
+#define  TH1520_SYS_PLL_STS_EN		BIT(16)
+#define  TH1520_SYS_PLL_STS_LOCKED	BIT(0)
+
+/* PHY configuration registers */
+#define TH1520_DDR_PHY_REG(regid)	((regid) * 2)
 
 /* UctShadowRegs */
-#define TH1520_PHY_MSG_STATUS		TH1520_DDR_REG(0xd0004)
+#define TH1520_PHY_MSG_STATUS		TH1520_DDR_PHY_REG(0xd0004)
 #define  TH1520_PHY_MSG_STATUS_EMPTY	BIT(0)
 /* DctWriteProt */
-#define TH1520_PHY_MSG_ACK		TH1520_DDR_REG(0xd0031)
+#define TH1520_PHY_MSG_ACK		TH1520_DDR_PHY_REG(0xd0031)
 #define  TH1520_PHY_MSG_ACK_EN		BIT(0)
 /* UctWriteOnlyShadow */
-#define TH1520_PHY_MSG_ID		TH1520_DDR_REG(0xd0032)
+#define TH1520_PHY_MSG_ID		TH1520_DDR_PHY_REG(0xd0032)
 #define  TH1520_PHY_MSG_ID_COMPLETION	0x7
 #define  TH1520_PHY_MSG_ID_ERROR	0xff
 /* UctDatWriteOnlyShadow */
-#define TH1520_PHY_MSG_DATA		TH1520_DDR_REG(0xd0034)
+#define TH1520_PHY_MSG_DATA		TH1520_DDR_PHY_REG(0xd0034)
 
 struct th1520_ddr_priv {
 	void __iomem *phy0;
@@ -83,7 +104,43 @@ struct th1520_ddr_priv {
 
 binman_sym_declare(ulong, ddr_fw, image_pos);
 
-int th1520_ddr_read_msg(void __iomem *phyreg, u16 *id, u16 *data)
+static int th1520_ddr_pll_config(void __iomem *sysreg, unsigned int frequency)
+{
+	u32 tmp;
+	int ret;
+
+	tmp = TH1520_SYS_PLL_CFG1_RST			|
+	      TH1520_SYS_PLL_CFG1_FOUTPOSTDIVPD		|
+	      TH1520_SYS_PLL_CFG1_FOUT4PHASEPD		|
+	      Th1520_SYS_PLL_CFG1_DACPD;
+	writel(tmp, sysreg + TH1520_SYS_PLL_CFG1);
+
+	switch (frequency) {
+	case TH1520_DDR_FREQ_3733:
+		writel(FIELD_PREP(TH1520_SYS_PLL_CFG0_REFDIV, 1)	|
+		       FIELD_PREP(TH1520_SYS_PLL_CFG0_FBDIV, 77)	|
+		       FIELD_PREP(TH1520_SYS_PLL_CFG0_POSTDIV1, 2)	|
+		       FIELD_PREP(TH1520_SYS_PLL_CFG0_POSTDIV2, 1),
+		       sysreg + TH1520_SYS_PLL_CFG0);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	udelay(2);
+	tmp &= ~TH1520_SYS_PLL_CFG1_RST;
+	writel(tmp, sysreg + TH1520_SYS_PLL_CFG1);
+
+	ret = readl_poll_timeout(sysreg + TH1520_SYS_PLL_STS, tmp,
+				 tmp & TH1520_SYS_PLL_STS_LOCKED,
+				 TH1520_SYS_PLL_TIMEOUT_US);
+
+	writel(TH1520_SYS_PLL_STS_EN, sysreg + TH1520_SYS_PLL_STS);
+
+	return ret;
+}
+
+static int th1520_ddr_read_msg(void __iomem *phyreg, u16 *id, u16 *data)
 {
 	u32 tmp;
 	int ret;
@@ -186,12 +243,16 @@ static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
 	return 0;
 }
 
-void th1520_ddr_init(struct th1520_ddr_priv *priv)
+static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 {
 	struct th1520_ddr_fw *fw = (void *)binman_sym(ulong, ddr_fw, image_pos);
+	int ret;
 
-	/* TODO: rewrite frequency-related code */
-	pll_config(fw->freq == TH1520_DDR_FREQ_3733 ? 3733 : 0);
+	ret = th1520_ddr_pll_config(priv->sys, fw->freq);
+	if (ret) {
+		pr_err("failed to configure PLL: %d\n", ret);
+		return ret;
+	}
 
 	deassert_pwrok_apb(fw->bitwidth);
 
@@ -211,6 +272,8 @@ void th1520_ddr_init(struct th1520_ddr_priv *priv)
 	enable_auto_refresh();
 
 	lpddr4_auto_selref();
+
+	return 0;
 }
 
 static int th1520_ddr_probe(struct udevice *dev)
@@ -238,9 +301,7 @@ static int th1520_ddr_probe(struct udevice *dev)
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
-	th1520_ddr_init(priv);
-
-	return 0;
+	return th1520_ddr_init(priv);
 }
 
 static int th1520_ddr_get_info(struct udevice *dev, struct ram_info *info)

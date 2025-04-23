@@ -77,42 +77,6 @@ void enable_auto_refresh() {
     wr(RFSHCTL3,0);//enable auto_refresh
 }
 
- void pll_config (int speed) {
- if(speed==4266) {
- //4266
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x4b000000);
-  ddr_sysreg_wr(DDR_CFG0+0x8,0x01205801);
-  udelay(2);
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x0b000000);
- } else if(speed==3733) {
- //3733
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x4b000000);
-  ddr_sysreg_wr(DDR_CFG0+0x8,0x01204d01);
-  udelay(2);
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x0b000000);
- } else if(speed==3200) {
- //3200
- } else if(speed==2133) {
- //2133
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x4b000000);
-  ddr_sysreg_wr(DDR_CFG0+0x8,0x01608501);
-  udelay(2);
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x0b000000);
- } else {
-#ifdef CONFIG_DDR_MSG
- printf("Reserved Pll setting\n");
-#endif
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x4b000000);
-  ddr_sysreg_wr(DDR_CFG0+0x8,0x01606601);
-  ddr_sysreg_wr(DDR_CFG0+0xc,0x0b000000);
-}
-#ifdef CONFIG_DDR_MSG
-  printf("Freq    is %0x \n",ddr_sysreg_rd(DDR_CFG0+0x8));
-#endif
-  while((ddr_sysreg_rd(DDR_CFG0+0x18)&1)!=0x1); //pll lock
-  ddr_sysreg_wr(DDR_CFG0+0x18,0x10000);// core clock cg off
- }
-
  void ctrl_en(enum DDR_BITWIDTH bits) {
  // wr(SWCTL,0x00000000);
   wr(DFIMISC,0x00000030);// [5]dfi_init_start
@@ -151,23 +115,29 @@ if(bits==64) {
  }
 
  void deassert_pwrok_apb (enum DDR_BITWIDTH bits) {
+#if 0
   ddr_sysreg_wr(DDR_CFG0,0x40);  // release PwrOkIn
   ddr_sysreg_wr(DDR_CFG0,0x40);
   ddr_sysreg_wr(DDR_CFG0,0x40);
   ddr_sysreg_wr(DDR_CFG0,0x40);
   ddr_sysreg_wr(DDR_CFG0,0x40);
+#endif
   ddr_sysreg_wr(DDR_CFG0,0x40);
 
+#if 0
   ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
   ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
   ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
+#endif
   ddr_sysreg_wr(DDR_CFG0,0xc0);  // release Phyrst
 
+#if 0
   ddr_sysreg_wr(DDR_CFG0,0xd0);  // release apb presetn
   ddr_sysreg_wr(DDR_CFG0,0xd0);
   ddr_sysreg_wr(DDR_CFG0,0xd0);
   ddr_sysreg_wr(DDR_CFG0,0xd0);
   ddr_sysreg_wr(DDR_CFG0,0xd0);
+#endif
   ddr_sysreg_wr(DDR_CFG0,0xd0);
   if(bits==32) {
   ddr_sysreg_wr(DDR_CFG0,0xd2);
