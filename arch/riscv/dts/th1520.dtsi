@@ -22,6 +22,7 @@
 			device_type = "cpu";
 			riscv,isa = "rv64imafdc";
 			reg = <0>;
+			bootph-pre-ram;
 			i-cache-block-size = <64>;
 			i-cache-size = <65536>;
 			i-cache-sets = <512>;
@@ -43,6 +44,7 @@
 			device_type = "cpu";
 			riscv,isa = "rv64imafdc";
 			reg = <1>;
+			bootph-pre-ram;
 			i-cache-block-size = <64>;
 			i-cache-size = <65536>;
 			i-cache-sets = <512>;
@@ -64,6 +66,7 @@
 			device_type = "cpu";
 			riscv,isa = "rv64imafdc";
 			reg = <2>;
+			bootph-pre-ram;
 			i-cache-block-size = <64>;
 			i-cache-size = <65536>;
 			i-cache-sets = <512>;
@@ -85,6 +88,7 @@
 			device_type = "cpu";
 			riscv,isa = "rv64imafdc";
 			reg = <3>;
+			bootph-pre-ram;
 			i-cache-block-size = <64>;
 			i-cache-size = <65536>;
 			i-cache-sets = <512>;
