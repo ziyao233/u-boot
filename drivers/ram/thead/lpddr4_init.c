@@ -474,6 +474,24 @@ static int th1520_ddr_ctrl_init(void __iomem *ctrlreg, struct th1520_ddr_fw *fw)
 	writel(0x00000002, ctrlreg + TH1520_CTRL_DBG1);
 	writel(0x00000002, ctrlreg + TH1520_CTRL_DCH1_DBG1);
 
+	switch (fw->bitwidth) {
+	case 64:
+		writel(0x00040018, ctrlreg + TH1520_CTRL_ADDRMAP0);
+		writel(0x00090909, ctrlreg + TH1520_CTRL_ADDRMAP1);
+		writel(0x00000000, ctrlreg + TH1520_CTRL_ADDRMAP2);
+		writel(0x01010101, ctrlreg + TH1520_CTRL_ADDRMAP3);
+		writel(0x00001f1f, ctrlreg + TH1520_CTRL_ADDRMAP4);
+		writel(0x080f0808, ctrlreg + TH1520_CTRL_ADDRMAP5);
+		writel(0x08080808, ctrlreg + TH1520_CTRL_ADDRMAP6);
+		writel(0x00000f0f, ctrlreg + TH1520_CTRL_ADDRMAP7);
+		writel(0x08080808, ctrlreg + TH1520_CTRL_ADDRMAP9);
+		writel(0x08080808, ctrlreg + TH1520_CTRL_ADDRMAP10);
+		writel(0x00000008, ctrlreg + TH1520_CTRL_ADDRMAP11);
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
@@ -604,9 +622,6 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 		pr_err("failed to initialize DDR controller: %d\n", ret);
 		return ret;
 	}
-
-	// mode support: 16 32 64
-	addrmap(fw->ranknum, fw->bitwidth);
 
 	de_assert_other_reset_ddr();
 
