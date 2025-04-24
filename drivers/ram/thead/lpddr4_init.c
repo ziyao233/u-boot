@@ -623,7 +623,13 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 		return ret;
 	}
 
-	de_assert_other_reset_ddr();
+	reset |= TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(0) |
+		 TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(1) |
+		 TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(2) |
+		 TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(3) |
+		 TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(4) |
+		 TH1520_SYS_DDR_CFG0_CTRL_RSTN;
+	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
 
 	lpddr4_load_firmware(priv, fw);
 
