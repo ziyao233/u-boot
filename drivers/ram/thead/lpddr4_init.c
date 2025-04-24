@@ -60,7 +60,7 @@ struct th1520_ddr_fw {
 
 /* Driver constants */
 #define TH1520_SYS_PLL_TIMEOUT_US	30
-#define TH1520_CTRL_INIT_TIMEOUT_US	50000
+#define TH1520_CTRL_INIT_TIMEOUT_US	1000000
 #define TH1520_PHY_MSG_TIMEOUT_US	1000000
 
 /* System configuration registers */
@@ -70,7 +70,7 @@ struct th1520_ddr_fw {
 #define  TH1520_SYS_DDR_CFG0_PHY_PWROK_RSTN	BIT(6)
 #define  TH1520_SYS_DDR_CFG0_PHY_CORE_RSTN	BIT(7)
 #define  TH1520_SYS_DDR_CFG0_APB_PORT_RSTN(n)	BIT(n + 4 + 4)
-
+#define TH1520_SYS_DDR_CFG1			0x04
 #define TH1520_SYS_PLL_CFG0			0x08
 #define  TH1520_SYS_PLL_CFG0_POSTDIV2		GENMASK(26, 24)
 #define  TH1520_SYS_PLL_CFG0_POSTDIV1		GENMASK(22, 20)
@@ -624,7 +624,6 @@ static int th1520_ddr_ctrl_enable(void __iomem *ctrlreg,
 	writel(0x0000000a, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
 	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTL);
 
-
 	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_SWSTAT, tmp,
 				 tmp == 0x00000001,
 				 TH1520_CTRL_INIT_TIMEOUT_US);
@@ -652,7 +651,31 @@ static int th1520_ddr_ctrl_enable(void __iomem *ctrlreg,
 				 tmp == 0x00000001,
 				 TH1520_CTRL_INIT_TIMEOUT_US);
 
-	return ret;
+	if (ret)
+		return ret;
+
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DBG1);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_DCH1_DBG1);
+
+	return 0;
+}
+
+static void th1520_ddr_enable_self_refresh(void __iomem *ctrlreg,
+					   void __iomem *sysreg)
+{
+	writel(0x00000000, ctrlreg + TH1520_CTRL_RFSHCTL3);
+
+	writel(0x000a0000, sysreg + TH1520_SYS_DDR_CFG1);
+
+	writel(0x00000000, ctrlreg + TH1520_CTRL_SWCTL);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTLSTATIC);
+	writel(0x0040ae04, ctrlreg + TH1520_CTRL_PWRTMG);
+	writel(0x00430003, ctrlreg + TH1520_CTRL_HWLPCTL);
+	writel(0x00430003, ctrlreg + TH1520_CTRL_DCH1_HWLPCTL);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTL);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_SWCTLSTATIC);
+	writel(0x0000000b, ctrlreg + TH1520_CTRL_PWRCTL);
+	writel(0x0000000b, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
 }
 
 static int th1520_ddr_init(struct th1520_ddr_priv *priv)
@@ -696,11 +719,7 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 		return ret;
 	}
 
-	enable_axi_port(0x1f);
-
-	enable_auto_refresh();
-
-	lpddr4_auto_selref();
+	th1520_ddr_enable_self_refresh(priv->ctrl, priv->sys);
 
 	return 0;
 }
