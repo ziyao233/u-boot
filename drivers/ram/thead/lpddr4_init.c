@@ -60,7 +60,7 @@ struct th1520_ddr_fw {
 
 /* Driver constants */
 #define TH1520_SYS_PLL_TIMEOUT_US	30
-#define TH1520_CTRL_INIT_TIMEOUT_US	100
+#define TH1520_CTRL_INIT_TIMEOUT_US	50000
 #define TH1520_PHY_MSG_TIMEOUT_US	1000000
 
 /* System configuration registers */
@@ -598,6 +598,63 @@ static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
 	return 0;
 }
 
+static int th1520_ddr_ctrl_enable(void __iomem *ctrlreg,
+				  struct th1520_ddr_fw *fw)
+{
+	u32 tmp;
+	int ret;
+
+	writel(0x00000030, ctrlreg + TH1520_CTRL_DFIMISC);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DFISTAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DCH1_DFISTAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x00000010, ctrlreg + TH1520_CTRL_DFIMISC);
+	writel(0x00000011, ctrlreg + TH1520_CTRL_DFIMISC);
+	writel(0x0000000a, ctrlreg + TH1520_CTRL_PWRCTL);
+	writel(0x0000000a, ctrlreg + TH1520_CTRL_DCH1_PWRCTL);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTL);
+
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_SWSTAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_STAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_DCH1_STAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	writel(0x14000001, ctrlreg + TH1520_CTRL_DFIPHYMSTR);
+	writel(0x00000000, ctrlreg + TH1520_CTRL_SWCTL);
+	writel(0x00020002, ctrlreg + TH1520_CTRL_INIT0);
+	writel(0x00000001, ctrlreg + TH1520_CTRL_SWCTL);
+
+	ret = readl_poll_timeout(ctrlreg + TH1520_CTRL_SWSTAT, tmp,
+				 tmp == 0x00000001,
+				 TH1520_CTRL_INIT_TIMEOUT_US);
+
+	return ret;
+}
+
 static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 {
 	struct th1520_ddr_fw *fw = (void *)binman_sym(ulong, ddr_fw, image_pos);
@@ -633,7 +690,11 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 
 	lpddr4_load_firmware(priv, fw);
 
-	ctrl_en(fw->bitwidth);
+	ret = th1520_ddr_ctrl_enable(priv->ctrl, fw);
+	if (ret) {
+		pr_err("failed to enable DDR controller: %d\n", ret);
+		return ret;
+	}
 
 	enable_axi_port(0x1f);
 

@@ -77,40 +77,32 @@ void enable_auto_refresh() {
 }
 
  void ctrl_en(enum DDR_BITWIDTH bits) {
- // wr(SWCTL,0x00000000);
+ #if 0
   wr(DFIMISC,0x00000030);// [5]dfi_init_start
- // wr(SWCTL,0x00000001);
- // while(rd(SWSTAT)!=0x00000001);
   while(rd(DFISTAT)!=0x00000001); //polling dfi_init_complete
 if(bits==64) {
   while(rd(DCH1_DFISTAT)!=0x00000001);
  }
- // wr(SWCTL,0x00000000);
   wr(DFIMISC,0x00000010);
   wr(DFIMISC,0x00000011);
   wr(PWRCTL,0x0000000a); //[3] dfi_dram_clk_disable [1] powerdown_en
   wr(DCH1_PWRCTL,0x0000000a);
   wr(SWCTL,0x00000001);
+
+
    while(rd(SWSTAT)!=0x00000001);
    while(rd(STAT)!=0x00000001);
+ #endif
+
 if(bits==64) {
    while(rd(DCH1_STAT)!=0x00000001);
  }
+
   wr(DFIPHYMSTR,0x14000001);
   wr(SWCTL,0x00000000);
   wr(INIT0,0x00020002);
   wr(SWCTL,0x00000001);
   while(rd(SWSTAT)!=0x00000001);
-  //wr(PWRCTL,0x0000000b);
-  //wr(DCH1_PWRCTL,0x0000000b);
-#ifdef CONFIG_DDR_MSG
-  printf("DFIPHYMSTR is %0x \n",rd(DFIPHYMSTR));
-  printf("DFIUPD0    is %0x \n",rd(DFIUPD0));
-  printf("DFIUPD1    is %0x \n",rd(DFIUPD1));
-  printf("ZQCTL0     is %0x \n",rd(ZQCTL0));
-  printf("ADDRMAP0     is %0x \n",rd(ADDRMAP0));
-  printf("ADDRMAP1     is %0x \n",rd(ADDRMAP1));
-#endif
  }
 
 //de_assert umctl2_reset, phy_crst, and all areset
