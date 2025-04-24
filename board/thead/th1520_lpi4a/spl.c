@@ -9,6 +9,7 @@
 #include <asm/arch/spl.h>
 #include <asm/arch/sysctl_regs.h>
 #include <cpu_func.h>
+#include <dm.h>
 #include <hang.h>
 #include <spl.h>
 
@@ -38,13 +39,20 @@ u32 spl_boot_device(void)
 void board_init_f(ulong dummy)
 {
 	int ret = spl_early_init();
+	struct udevice *dev;
 
-	if (ret) {
-		debug("spl_early_init() failed %d\n", ret);
-		hang();
-	}
+	if (ret)
+		panic("spl_early_init() failed %d\n", ret);
 
 	preloader_console_init();
+
+	/*
+	 * Manually bind CPU ahead of time to make sure in-core timers are
+	 * available in SPL.
+	 */
+	ret = uclass_get_device(UCLASS_CPU, 0, &dev);
+	if (ret)
+		panic("failed to bind CPU: %d\n", ret);
 
 	spl_dram_init();
 
