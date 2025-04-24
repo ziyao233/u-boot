@@ -28,16 +28,7 @@
 	};
 };
 
-&clint {
-	bootph-pre-ram;
-};
-
-&cpus {
-	bootph-pre-ram;
-};
-
 &uart0 {
-	bootph-pre-ram;
 	clock-frequency = <100000000>;
 	current-speed = <115200>;
 	status = "okay";
