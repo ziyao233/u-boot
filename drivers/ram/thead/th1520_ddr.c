@@ -1,6 +1,3 @@
-#include "common_lib.h"
-#include "lpddr4_init.h"
-
 #include <binman.h>
 #include <binman_sym.h>
 #include <dm.h>
@@ -547,22 +544,27 @@ static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
 	int ret;
 
 	for (cfg = fw->cfgs, i = 0; i < fw->cfgnum; i++) {
-		uint32_t addr = FIELD_GET(TH1520_DDR_CFG_ADDR, cfg->opaddr);
+		uint32_t addr = FIELD_GET(TH1520_DDR_CFG_ADDR, cfg->opaddr) * 2;
 		uint32_t op = FIELD_GET(TH1520_DDR_CFG_OP, cfg->opaddr);
 
 		switch (op) {
 		case TH1520_DDR_CFG_PHY0:
-			ddr_phy0_reg_wr(addr, cfg->phy.data);
+			writew(cfg->phy.data, priv->phy0 + addr);
 			break;
 		case TH1520_DDR_CFG_PHY1:
-			ddr_phy1_reg_wr(addr, cfg->phy.data);
+			writew(cfg->phy.data, priv->phy1 + addr);
 			break;
 		case TH1520_DDR_CFG_PHY:
-			ddr_phy_reg_wr(addr, cfg->phy.data);
+			writew(cfg->phy.data, priv->phy0 + addr);
+			writew(cfg->phy.data, priv->phy1 + addr);
 			break;
 		case TH1520_DDR_CFG_RANGE:
-			for (j = 0; j < cfg->range.num; j++)
-				ddr_phy_reg_wr(addr + j, cfg->range.data[j]);
+			for (j = 0; j < cfg->range.num; j++) {
+				writew(cfg->range.data[j],
+				       priv->phy0 + addr + j * 2);
+				writew(cfg->range.data[j],
+				       priv->phy1 + addr + j * 2);
+			}
 			break;
 		case TH1520_DDR_CFG_WAITFW0:
 			ret = th1520_phy_wait_pmu_completion(priv->phy0);
