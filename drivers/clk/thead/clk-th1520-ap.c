@@ -855,6 +855,8 @@ static int th1520_clk_probe(struct udevice *dev)
 			       common->name, ret);
 			return ret;
 		}
+
+		common->clk.id = common->clkid;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(th1520_div_clks); i++) {
@@ -880,6 +882,8 @@ static int th1520_clk_probe(struct udevice *dev)
 			       cd->common.name, ret);
 			return ret;
 		}
+
+		cd->common.clk.id = cd->common.clkid;
 	}
 
 	clk = clk_register_fixed_factor(dev, "gmac-pll-clk-100m", "gmac-pll",
@@ -889,6 +893,7 @@ static int th1520_clk_probe(struct udevice *dev)
 		       (int)PTR_ERR(clk));
 		return PTR_ERR(clk);
 	}
+	clk->id = CLK_PLL_GMAC_100M;
 
 	clk = clk_register_fixed_factor(dev, "emmc-sdio-ref", "video-pll",
 					0, 1, 4);
@@ -916,6 +921,8 @@ static int th1520_clk_probe(struct udevice *dev)
 			       cm->common.name, (int)PTR_ERR(clk));
 			return PTR_ERR(clk);
 		}
+
+		clk->id = cm->common.clkid;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(th1520_gate_clks); i++) {
@@ -935,6 +942,8 @@ static int th1520_clk_probe(struct udevice *dev)
 			       cg->common.name, (int)PTR_ERR(clk));
 			return PTR_ERR(clk);
 		}
+
+		clk->id = cg->common.clkid;
 	}
 
 	return 0;
