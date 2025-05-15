@@ -2,6 +2,7 @@
 /*
  * Copyright (C) 2023 Jisheng Zhang <jszhang@kernel.org>
  * Copyright (C) 2023 Vivo Communication Technology Co. Ltd.
+ * Copyright (C) 2025 Yao Zi <ziyao@disroot.org>
  *  Authors: Yangtao Li <frank.li@vivo.com>
  */
 
@@ -31,7 +32,6 @@ struct ccu_internal {
 struct ccu_div_internal {
 	u8	shift;
 	u8	width;
-	u32	flags;
 };
 
 struct ccu_common {
@@ -45,8 +45,7 @@ struct ccu_common {
 
 struct ccu_mux {
 	const char **		parents;
-	// TODO: Rename parent_num to num_parents
-	size_t			parent_num;
+	size_t			num_parents;
 	struct ccu_internal	mux;
 	struct ccu_common	common;
 };
@@ -59,7 +58,7 @@ struct ccu_gate {
 
 struct ccu_div {
 	const char **		parents;
-	size_t			parent_num;
+	size_t			num_parents;
 	u32			enable;
 	struct ccu_div_internal	div;
 	struct ccu_internal	mux;
@@ -80,7 +79,6 @@ struct ccu_pll {
 	{								\
 		.shift	= _shift,					\
 		.width	= _width,					\
-		.flags	= _flags,					\
 	}
 
 #define CCU_GATE(_clkid, _struct, _name, _parent, _reg, _gate, _flags)	\
@@ -160,13 +158,13 @@ static int ccu_enable_helper(struct ccu_common *common, u32 gate)
 	return 0;
 }
 
-static int ccu_get_parent_index_helper(const char **parents, int parent_num,
+static int ccu_get_parent_index_helper(const char **parents, int num_parents,
 				       struct clk *parent)
 {
 	const char *parent_name = parent->dev->name;
 	unsigned int index;
 
-	for (index = 0; index < parent_num; index++) {
+	for (index = 0; index < num_parents; index++) {
 		if (!strcmp(parents[index], parent_name))
 			return index;
 	}
@@ -184,7 +182,7 @@ static unsigned long ccu_div_get_rate(struct clk *clk)
 	val = val >> cd->div.shift;
 	val &= GENMASK(cd->div.width - 1, 0);
 	rate = divider_recalc_rate(clk, clk_get_parent_rate(clk), val, NULL,
-				   cd->div.flags, cd->div.width);
+				   0, cd->div.width);
 
 	return rate;
 }
@@ -201,7 +199,7 @@ static int ccu_div_set_parent(struct clk *clk, struct clk *parent)
 	struct ccu_div *cd = clk_to_ccu_div(clk);
 	u8 id;
 
-	id = ccu_get_parent_index_helper(cd->parents, cd->parent_num, parent);
+	id = ccu_get_parent_index_helper(cd->parents, cd->num_parents, parent);
 	if (id < 0)
 		return id;
 
@@ -229,8 +227,6 @@ static const struct clk_ops ccu_div_ops = {
 	.enable		= ccu_div_enable,
 	.set_parent	= ccu_div_set_parent,
 	.get_rate	= ccu_div_get_rate,
-// TODO: is round_rate necessary?
-//	.round_rate	= clk_hw_determine_rate_no_reparent,
 };
 
 U_BOOT_DRIVER(th1520_clk_div) = {
@@ -389,7 +385,7 @@ static const char *c910_i0_parents[] = {
 
 static struct ccu_mux c910_i0_clk = {
 	.parents	= c910_i0_parents,
-	.parent_num	= ARRAY_SIZE(c910_i0_parents),
+	.num_parents	= ARRAY_SIZE(c910_i0_parents),
 	.mux		= TH_CCU_ARG(1, 1),
 	.common		= {
 		.clkid		= CLK_C910_I0,
@@ -404,7 +400,7 @@ static const char *c910_parents[] = {
 
 static struct ccu_mux c910_clk = {
 	.parents	= c910_parents,
-	.parent_num	= ARRAY_SIZE(c910_parents),
+	.num_parents	= ARRAY_SIZE(c910_parents),
 	.mux		= TH_CCU_ARG(0, 1),
 	.common		= {
 		.clkid		= CLK_C910,
@@ -419,7 +415,7 @@ static const char *ahb2_cpusys_parents[] = {
 
 static struct ccu_div ahb2_cpusys_hclk = {
 	.parents	= ahb2_cpusys_parents,
-	.parent_num	= ARRAY_SIZE(ahb2_cpusys_parents),
+	.num_parents	= ARRAY_SIZE(ahb2_cpusys_parents),
 	.div		= TH_CCU_DIV_FLAGS(0, 3, CLK_DIVIDER_ONE_BASED),
 	.mux		= TH_CCU_ARG(5, 1),
 	.common		= {
@@ -435,7 +431,7 @@ static const char *ahb2_cpusys_hclk_parents[] = {
 
 static struct ccu_div apb3_cpusys_pclk = {
 	.parents	= ahb2_cpusys_hclk_parents,
-	.parent_num	= ARRAY_SIZE(ahb2_cpusys_hclk_parents),
+	.num_parents	= ARRAY_SIZE(ahb2_cpusys_hclk_parents),
 	.div		= TH_CCU_ARG(0, 3),
 	.common		= {
 		.clkid          = CLK_APB3_CPUSYS_PCLK,
@@ -446,7 +442,7 @@ static struct ccu_div apb3_cpusys_pclk = {
 
 static struct ccu_div axi4_cpusys2_aclk = {
 	.parents	= gmac_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(gmac_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(gmac_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(0, 3, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_AXI4_CPUSYS2_ACLK,
@@ -461,7 +457,7 @@ static const char *axi_parents[] = {
 
 static struct ccu_div axi_aclk = {
 	.parents	= axi_parents,
-	.parent_num	= ARRAY_SIZE(axi_parents),
+	.num_parents	= ARRAY_SIZE(axi_parents),
 	.div		= TH_CCU_DIV_FLAGS(0, 4, CLK_DIVIDER_ONE_BASED),
 	.mux		= TH_CCU_ARG(5, 1),
 	.common		= {
@@ -477,7 +473,7 @@ static const char *perisys_ahb_hclk_parents[] = {
 
 static struct ccu_div perisys_ahb_hclk = {
 	.parents	= perisys_ahb_hclk_parents,
-	.parent_num	= ARRAY_SIZE(perisys_ahb_hclk_parents),
+	.num_parents	= ARRAY_SIZE(perisys_ahb_hclk_parents),
 	.enable		= BIT(6),
 	.div		= TH_CCU_DIV_FLAGS(0, 4, CLK_DIVIDER_ONE_BASED),
 	.mux		= TH_CCU_ARG(5, 1),
@@ -494,7 +490,7 @@ static const char *perisys_ahb_hclk_parent[] = {
 
 static struct ccu_div perisys_apb_pclk = {
 	.parents	= perisys_ahb_hclk_parent,
-	.parent_num	= ARRAY_SIZE(perisys_ahb_hclk_parent),
+	.num_parents	= ARRAY_SIZE(perisys_ahb_hclk_parent),
 	.div		= TH_CCU_ARG(0, 3),
 	.common		= {
 		.clkid          = CLK_PERI_APB_PCLK,
@@ -505,7 +501,7 @@ static struct ccu_div perisys_apb_pclk = {
 
 static struct ccu_div peri2sys_apb_pclk = {
 	.parents	= gmac_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(gmac_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(gmac_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(4, 3, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_PERI2APB_PCLK,
@@ -520,7 +516,7 @@ static const char *apb_parents[] = {
 
 static struct ccu_div apb_pclk = {
 	.parents	= apb_parents,
-	.parent_num	= ARRAY_SIZE(apb_parents),
+	.num_parents	= ARRAY_SIZE(apb_parents),
 	.enable		= BIT(5),
 	.div		= TH_CCU_DIV_FLAGS(0, 4, CLK_DIVIDER_ONE_BASED),
 	.mux		= TH_CCU_ARG(7, 1),
@@ -538,7 +534,7 @@ static const char *npu_parents[] = {
 
 static struct ccu_div npu_clk = {
 	.parents	= npu_parents,
-	.parent_num	= ARRAY_SIZE(npu_parents),
+	.num_parents	= ARRAY_SIZE(npu_parents),
 	.enable		= BIT(4),
 	.div		= TH_CCU_DIV_FLAGS(0, 3, CLK_DIVIDER_ONE_BASED),
 	.mux		= TH_CCU_ARG(6, 1),
@@ -551,7 +547,7 @@ static struct ccu_div npu_clk = {
 
 static struct ccu_div vi_clk = {
 	.parents	= video_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(video_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(video_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(16, 4, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_VI,
@@ -562,7 +558,7 @@ static struct ccu_div vi_clk = {
 
 static struct ccu_div vi_ahb_clk = {
 	.parents	= video_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(video_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(video_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(0, 4, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_VI_AHB,
@@ -573,7 +569,7 @@ static struct ccu_div vi_ahb_clk = {
 
 static struct ccu_div vo_axi_clk = {
 	.parents	= video_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(video_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(video_pll_clk_parent),
 	.enable		= BIT(5),
 	.div		= TH_CCU_DIV_FLAGS(0, 4, CLK_DIVIDER_ONE_BASED),
 	.common		= {
@@ -585,7 +581,7 @@ static struct ccu_div vo_axi_clk = {
 
 static struct ccu_div vp_apb_clk = {
 	.parents	= gmac_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(gmac_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(gmac_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(0, 3, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_VP_APB,
@@ -596,7 +592,7 @@ static struct ccu_div vp_apb_clk = {
 
 static struct ccu_div vp_axi_clk = {
 	.parents	= video_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(video_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(video_pll_clk_parent),
 	.enable		= BIT(15),
 	.div		= TH_CCU_DIV_FLAGS(8, 4, CLK_DIVIDER_ONE_BASED),
 	.common		= {
@@ -608,7 +604,7 @@ static struct ccu_div vp_axi_clk = {
 
 static struct ccu_div venc_clk = {
 	.parents	= gmac_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(gmac_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(gmac_pll_clk_parent),
 	.enable		= BIT(5),
 	.div		= TH_CCU_DIV_FLAGS(0, 3, CLK_DIVIDER_ONE_BASED),
 	.common		= {
@@ -620,7 +616,7 @@ static struct ccu_div venc_clk = {
 
 static struct ccu_div dpu0_clk = {
 	.parents	= dpu0_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(dpu0_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(dpu0_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(0, 8, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_DPU0,
@@ -631,7 +627,7 @@ static struct ccu_div dpu0_clk = {
 
 static struct ccu_div dpu1_clk = {
 	.parents	= dpu1_pll_clk_parent,
-	.parent_num	= ARRAY_SIZE(dpu1_pll_clk_parent),
+	.num_parents	= ARRAY_SIZE(dpu1_pll_clk_parent),
 	.div		= TH_CCU_DIV_FLAGS(0, 8, CLK_DIVIDER_ONE_BASED),
 	.common		= {
 		.clkid          = CLK_DPU1,
@@ -708,7 +704,7 @@ static const char *uart_sclk_parents[] = {
 
 static struct ccu_mux uart_sclk = {
 	.parents	= uart_sclk_parents,
-	.parent_num	= ARRAY_SIZE(uart_sclk_parents),
+	.num_parents	= ARRAY_SIZE(uart_sclk_parents),
 	.mux		= TH_CCU_ARG(0, 1),
 	.common		= {
 		.clkid          = CLK_UART_SCLK,
@@ -809,8 +805,6 @@ static struct ccu_common *th1520_gate_clks[] = {
 	&sram3_clk.common,
 };
 
-#define NR_CLKS	(CLK_UART_SCLK + 1)
-
 static void th1520_clk_fill_osc_name(const char **names, size_t name_num,
 				     const char *osc_name)
 {
@@ -865,10 +859,10 @@ static int th1520_clk_probe(struct udevice *dev)
 		const char *current_parent;
 
 		cd->common.reg = base;
-		th1520_clk_fill_osc_name(cd->parents, cd->parent_num,
+		th1520_clk_fill_osc_name(cd->parents, cd->num_parents,
 					 osc_name);
 
-		if (cd->parent_num > 1)
+		if (cd->num_parents > 1)
 			current_parent = cd->parents[ccu_div_get_parent(cd)];
 		else
 			current_parent = cd->parents[0];
@@ -907,11 +901,11 @@ static int th1520_clk_probe(struct udevice *dev)
 		struct ccu_mux *cm = container_of(th1520_mux_clks[i],
 						  struct ccu_mux, common);
 
-		th1520_clk_fill_osc_name(cm->parents, cm->parent_num,
+		th1520_clk_fill_osc_name(cm->parents, cm->num_parents,
 					 osc_name);
 
 		clk = clk_register_mux(dev, cm->common.name,
-				       cm->parents, cm->parent_num,
+				       cm->parents, cm->num_parents,
 				       0,
 				       base + cm->common.cfg0,
 				       cm->mux.shift, cm->mux.width,
@@ -931,7 +925,6 @@ static int th1520_clk_probe(struct udevice *dev)
 
 		th1520_clk_fill_osc_name(&cg->parent, 1, osc_name);
 
-		// TODO: are flags necessary for U-Boot?
 		clk = clk_register_gate(dev, cg->common.name,
 					cg->parent,
 					0,
