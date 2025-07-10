@@ -18,6 +18,12 @@
 /* Environment options */
 
 #define CFG_EXTRA_ENV_SETTINGS \
-	"PS1=[LPi4A]# \0"
+	"PS1=[LPi4A]# \0" \
+	"pxefile_addr_r=0x30000000\0" \
+	"serverip=192.168.114.51\0" \
+	"ipaddr=192.168.114.50\0" \
+	"kernel_addr_r=0x31000000\0" \
+	"ramdisk_addr_r=0x34000000\0" \
+	"fdt_addr_r=0x40000000\0"
 
 #endif /* __TH1520_LPI4A_H */
