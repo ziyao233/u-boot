@@ -60,6 +60,16 @@ config REMOTEPROC_STM32_COPRO
 	  Say 'y' here to add support for STM32 Cortex-M4 coprocessors via the
 	  remoteproc framework.
 
+config REMOTEPROC_THEAD_TH1520
+	bool "Support for TH1520 E902 coprocessor"
+	select REMOTEPROC
+	default THEAD_TH1520
+	depends on DM
+	depends on DM_RESET
+	help
+	  Say 'y' here to add support for T-Head TH1520 E902 coprocessor via
+	  the remoteproc framework.
+
 config REMOTEPROC_TI_K3_ARM64
 	bool "Support for TI's K3 based ARM64 remoteproc driver"
 	select REMOTEPROC
