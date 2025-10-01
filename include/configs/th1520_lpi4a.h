@@ -24,6 +24,9 @@
 	"ipaddr=192.168.114.50\0" \
 	"kernel_addr_r=0x31000000\0" \
 	"ramdisk_addr_r=0x34000000\0" \
-	"fdt_addr_r=0x40000000\0"
+	"fdt_addr_r=0x40000000\0" \
+	"load_aon=mmc dev 1; rproc init; " \
+	"fatload mmc 1:1 0x10000000 /lpi4a-aon.elf; " \
+	"rproc load 0 $fileaddr $filesize; rproc start 0\0"
 
 #endif /* __TH1520_LPI4A_H */
