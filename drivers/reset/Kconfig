@@ -252,5 +252,13 @@ config RESET_SPACEMIT_K1
 	  Support for SPACEMIT's K1 Reset system. Basic Assert/Deassert
 	  is supported.
 
+config RESET_TH1520
+	bool "Support for T-Head TH1520 Reset driver"
+	depends on DM_RESET
+	help
+	  Support for T-Head TH1520 reset driver. Only resets for AO region
+	  are implemented, and are necessary for the integrated E902
+	  coprocessor to operate.
+
 source "drivers/reset/stm32/Kconfig"
 endmenu
