@@ -166,6 +166,7 @@ void harts_early_init(void)
 	 * enabled and resets should be deasserted ahead of time, or the HART
 	 * will hang when configuring corresponding IOPMP entries.
 	 */
+	writel(0x37, (void __iomem *)0xfffff4403c);
 	setbits_le32(TH1520_SUBSYS_CLK, TH1520_SUBSYS_CLK_VO_EN |
 					TH1520_SUBSYS_CLK_VI_EN |
 					TH1520_SUBSYS_CLK_DSP_EN);
