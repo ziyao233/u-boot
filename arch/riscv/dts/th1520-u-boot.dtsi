@@ -3,6 +3,8 @@
  * Copyright (C) 2025 Yao Zi <ziyao@disroot.org>
  */
 
+#include <dt-bindings/reset/thead,th1520-reset.h>
+
 &{/soc} {
 	ddrc: ddrc@fffd000000 {
 		compatible = "thead,th1520-ddrc";
@@ -18,6 +20,15 @@
 		compatible = "thead,th1520-reset-ao";
 		reg = <0xff 0xfff44000 0x0 0x2000>;
 		#reset-cells = <1>;
+		status = "okay";
+	};
+
+	sysreg_ao: system-controller@fffff48000 {
+		compatible = "thead,th1520-sysreg-ao";
+		reg = <0xff 0xfff48000 0x0 0x2000>;
+		resets = <&rst_ao TH1520_RESET_ID_E902_CORE>,
+			 <&rst_ao TH1520_RESET_ID_E902_HAD>;
+		reset-names = "core", "had";
 		status = "okay";
 	};
 };
