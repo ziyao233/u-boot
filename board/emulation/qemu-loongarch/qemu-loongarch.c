@@ -8,6 +8,7 @@
 #include <env.h>
 #include <fdtdec.h>
 #include <image.h>
+#include <linux/sizes.h>
 #include <lmb.h>
 #include <log.h>
 #include <spl.h>
@@ -43,26 +44,8 @@ int board_init(void)
 	return 0;
 }
 
-#define addr_alloc(lmb, size) lmb_alloc(lmb, size, SZ_64K)
-
 int board_late_init(void)
 {
-	struct lmb lmb;
-	u32 status = 0;
-
-	lmb_init_and_reserve(&lmb, gd->bd, (void *)gd->fdt_blob);
-
-	status |= env_set_hex("kernel_addr_r", addr_alloc(&lmb, SZ_128M));
-	status |= env_set_hex("ramdisk_addr_r", addr_alloc(&lmb, SZ_128M));
-	status |= env_set_hex("kernel_comp_addr_r", addr_alloc(&lmb, SZ_64M));
-	status |= env_set_hex("kernel_comp_size", SZ_64M);
-	status |= env_set_hex("scriptaddr", addr_alloc(&lmb, SZ_4M));
-	status |= env_set_hex("pxefile_addr_r", addr_alloc(&lmb, SZ_4M));
-	status |= env_set_hex("fdt_addr_r", addr_alloc(&lmb, SZ_2M));
-
-	if (status)
-		log_warning("late_init: Failed to set run time variables\n");
-
 	/* start usb so that usb keyboard can be used as input device */
 	if (CONFIG_IS_ENABLED(USB_KEYBOARD))
 		usb_init();
@@ -76,9 +59,9 @@ int board_late_init(void)
 	return 0;
 }
 
-void *board_fdt_blob_setup(int *err)
+int board_fdt_blob_setup(void **fdtp)
 {
-	*err = 0;
 	/* Stored the DTB address there during our init */
-	return (void *)(ulong)0x100000;
+	*fdtp = (void *)(ulong)0x100000;
+	return 0;
 }
