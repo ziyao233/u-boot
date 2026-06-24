@@ -1141,7 +1141,7 @@ int fdtdec_setup_memory_banksize(void)
 			if (ret < 0)
 				break;
 
-			if (bank >= CONFIG_VAL(NR_DRAM_BANKS))
+			if (bank >= CONFIG_NR_DRAM_BANKS)
 				goto too_may_memory_banks;
 
 			gd->bd->bi_dram[bank].start = (phys_addr_t)res.start;
