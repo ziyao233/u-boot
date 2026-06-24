@@ -35,6 +35,7 @@
 #include <linux/ctype.h>
 #include <linux/lzo.h>
 #include <linux/ioport.h>
+#include <sort.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -1114,25 +1115,12 @@ ofnode fdtdec_get_next_memory_node(ofnode mem)
 	return get_next_memory_node(mem);
 }
 
-static void sort_memory_banks(int num)
+static int cmp_memory_bank(const void *a, const void *b)
 {
-	int i, j;
-	phys_addr_t tmp_start;
-	phys_size_t tmp_size;
-	struct bd_info *bd = gd->bd;
+	const struct bi_dram_bank *a1 = a, *b1 = b;
 
-	for (i = 0; i < num - 1; i++) {
-		for (j = i + 1; j < num; j++) {
-			if (bd->bi_dram[i].start > bd->bi_dram[j].start) {
-				tmp_start = bd->bi_dram[i].start;
-				tmp_size = bd->bi_dram[i].size;
-				bd->bi_dram[i].start = bd->bi_dram[j].start;
-				bd->bi_dram[i].size = bd->bi_dram[j].size;
-				bd->bi_dram[j].start = tmp_start;
-				bd->bi_dram[j].size = tmp_size;
-			}
-		}
-	}
+	return a1->start > b1->start ? 1 :
+	       a1->start < b1->start ? -1 : 0;
 }
 
 int fdtdec_setup_memory_banksize(void)
@@ -1174,7 +1162,8 @@ int fdtdec_setup_memory_banksize(void)
 		return -EINVAL;
 	}
 
-	sort_memory_banks(bank);
+	qsort(gd->bd->bi_dram, bank, sizeof(gd->bd->bi_dram[0]),
+	      cmp_memory_bank);
 
 	return 0;
 
