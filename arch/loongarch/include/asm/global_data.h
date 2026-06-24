@@ -6,7 +6,7 @@
  * Copyright (C) 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
  */
 
-#ifndef	__ASM_GBL_DATA_H
+#ifndef __ASM_GBL_DATA_H
 #define __ASM_GBL_DATA_H
 
 #include <linux/types.h>
