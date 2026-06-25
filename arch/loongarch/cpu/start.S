@@ -96,7 +96,7 @@ relocate_code:
 stack_setup:
 	move		sp, s2
 	la.pcrel	t0, _start
-	PTR_SUB		t6, s4, t0		/* t6 <- relocation offset */
+	PTR_SUB		s5, s4, t0		/* s5 <- relocation offset */
 	beq		t0, s4, clear_bss	/* skip relocation */
 
 	move		t1, s4			/* t1 <- scratch for copy_loop */
@@ -116,8 +116,8 @@ fix_rela_dyn:
 	la.pcrel	t1, __rel_dyn_start
 	la.pcrel	t2, __rel_dyn_end
 	beq		t1, t2, clear_bss
-	PTR_ADD		t1, t1, t6		/* t1 <- rela_dyn_start in RAM */
-	PTR_ADD		t2, t2, t6		/* t2 <- rela_dyn_end in RAM */
+	PTR_ADD		t1, t1, s5		/* t1 <- rela_dyn_start in RAM */
+	PTR_ADD		t2, t2, s5		/* t2 <- rela_dyn_end in RAM */
 
 6:
 	PTR_L		t5, t1, PTRSIZE		/* t5 <-- relocation info:type */
@@ -125,8 +125,8 @@ fix_rela_dyn:
 	bne		t5, t3, 8f		/* skip non-RELATIVE entries */
 	PTR_L		t3, t1, 0
 	PTR_L		t5, t1, (PTRSIZE * 2)	/* t5 <-- addend */
-	PTR_ADD		t5, t5, t6		/* t5 <-- location to fix up in RAM */
-	PTR_ADD		t3, t3, t6		/* t3 <-- location to fix up in RAM */
+	PTR_ADD		t5, t5, s5		/* t5 <-- location to fix up in RAM */
+	PTR_ADD		t3, t3, s5		/* t3 <-- location to fix up in RAM */
 	PTR_S		t5, t3, 0
 8:
 	PTR_ADDI	t1, t1, (PTRSIZE * 3)
@@ -135,14 +135,14 @@ fix_rela_dyn:
 
 	/* Update exception entry */
 	la.pcrel	t0, exception_entry
-	PTR_ADD		t0, t0, t6
+	PTR_ADD		t0, t0, s5
 	csrwr		t0, LOONGARCH_CSR_EENTRY
 
 clear_bss:
 	la.pcrel	t0, __bss_start		/* t0 <- rel __bss_start in FLASH */
-	PTR_ADD		t0, t0, t6		/* t0 <- rel __bss_start in RAM */
+	PTR_ADD		t0, t0, s5		/* t0 <- rel __bss_start in RAM */
 	la.pcrel	t1, __bss_end		/* t1 <- rel __bss_end in FLASH */
-	PTR_ADD		t1, t1, t6		/* t1 <- rel __bss_end in RAM */
+	PTR_ADD		t1, t1, s5		/* t1 <- rel __bss_end in RAM */
 
 clbss_l:
 	LONG_S		zero, t0, 0		/* clear loop... */
@@ -158,7 +158,7 @@ call_board_init_r:
 	bl		invalidate_icache_all
 	bl		flush_dcache_all
 	la.pcrel	t0, board_init_r        /* offset of board_init_r() */
-	PTR_ADD		t4, t0, t6		/* real address of board_init_r() */
+	PTR_ADD		t4, t0, s5		/* real address of board_init_r() */
 /*
  * setup parameters for board_init_r
  */
