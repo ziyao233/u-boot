@@ -64,7 +64,8 @@ call_board_init_f_0:
 	move		u0, a0
 	bl		board_init_f_init_reserve
 
-	/* Enable cache */
+	/* Probe and enable cache */
+	bl		probe_caches
 	bl		enable_caches
 
 #ifdef CONFIG_DEBUG_UART
