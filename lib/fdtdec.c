@@ -1138,13 +1138,14 @@ int fdtdec_setup_memory_banksize(void)
 
 		while (true) {
 			int ret = ofnode_read_resource(mem, reg, &res);
+
 			if (ret < 0)
 				break;
 
 			if (bank >= CONFIG_NR_DRAM_BANKS)
 				goto too_may_memory_banks;
 
-			gd->bd->bi_dram[bank].start = (phys_addr_t)res.start;
+			gd->bd->bi_dram[bank].start = res.start;
 			gd->bd->bi_dram[bank].size =
 				(phys_size_t)(res.end - res.start + 1);
 
@@ -1179,7 +1180,7 @@ int fdtdec_setup_mem_size_base_lowest(void)
 	__maybe_unused const char *final_name;
 	__maybe_unused int final_reg;
 
-	gd->ram_base = (unsigned long)~0;
+	gd->ram_base = ULONG_MAX;
 
 	while (true) {
 		struct resource res;
@@ -1192,8 +1193,10 @@ int fdtdec_setup_mem_size_base_lowest(void)
 
 		while (true) {
 			int ret = ofnode_read_resource(mem, reg, &res);
+
 			if (ret < 0)
 				break;
+
 			base = res.start;
 			size = res.end - res.start + 1;
 			if (gd->ram_base > base && size) {
@@ -1202,6 +1205,7 @@ int fdtdec_setup_mem_size_base_lowest(void)
 				final_name = ofnode_get_name(mem);
 				final_reg = reg;
 			}
+
 			reg++;
 			bank++;
 		}
@@ -1212,9 +1216,9 @@ int fdtdec_setup_mem_size_base_lowest(void)
 		return -EINVAL;
 	}
 
-	log_debug("%s: Initial DRAM %s.%d: base %lx size %lx\n",
+	log_debug("%s: Initial DRAM %s.%d: base %lx size %pap\n",
 		  __func__, final_name, final_reg,
-		  (ulong)gd->ram_base, (ulong)gd->ram_size);
+		  gd->ram_base, &gd->ram_size);
 
 	return 0;
 }
