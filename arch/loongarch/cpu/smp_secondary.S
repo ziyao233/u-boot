@@ -36,7 +36,7 @@ ENTRY(secondary_core_loop)
 	iocsrrd.w	t0, t1
 	beqz		t0, 1b
 
-	/* CLear IPI interrupt */
+	/* Clear IPI interrupt */
 	PTR_LI		t1, LOONGARCH_IOCSR_IPI_STATUS
 	iocsrrd.w	t0, t1
 	PTR_LI		t1, LOONGARCH_IOCSR_IPI_CLEAR
