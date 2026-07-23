@@ -160,9 +160,8 @@ RUN git config --global http.proxy http://172.16.70.12:7890
 
 # Build GRUB UEFI targets for ARM & RISC-V, 32-bit and 64-bit, and LoongArch
 # 64-bit
-RUN git clone https://https.git.savannah.gnu.org/git/grub.git /tmp/grub && \
+RUN git clone https://https.git.savannah.gnu.org/git/grub.git /tmp/grub -b grub-2.14 --depth=1 && \
 	cd /tmp/grub && \
-	git checkout grub-2.14 && \
 	git config --global user.name "GitLab CI Runner" && \
 	git config --global user.email trini@konsulko.com && \
 	GNULIB_URL=https://https.git.savannah.gnu.org/git/gnulib.git ./bootstrap && \
@@ -246,9 +245,8 @@ RUN git clone https://https.git.savannah.gnu.org/git/grub.git /tmp/grub && \
 	grub-core normal echo lsefimmap lsefi lsefisystab efinet tftp minicmd && \
 	rm -rf /tmp/grub
 
-RUN git clone https://gitlab.com/qemu-project/qemu.git /tmp/qemu && \
+RUN git clone https://gitlab.com/qemu-project/qemu.git /tmp/qemu -b v10.1.2 && \
 	cd /tmp/qemu && \
-	git checkout v10.1.2 && \
 	# config user.name and user.email to make 'git am' happy
 	git config user.name u-boot && \
 	git config user.email u-boot@denx.de && \
@@ -322,7 +320,7 @@ RUN wget -O - https://github.com/pengutronix/genimage/releases/download/v14/geni
 	rm -rf /tmp/genimage-14
 
 # Build libtpms
-RUN git clone https://github.com/stefanberger/libtpms /tmp/libtpms && \
+RUN git clone https://github.com/stefanberger/libtpms /tmp/libtpms --depth=1 && \
 	cd /tmp/libtpms && \
 	./autogen.sh && \
 	./configure && \
@@ -407,4 +405,4 @@ RUN /bin/echo -e "\n[toolchain-alias]\nsh = sh2" >> ~/.buildman
 RUN /bin/echo -e "\nx86 = i386" >> ~/.buildman;
 
 # Add mkbootimg tool
-RUN git clone https://android.googlesource.com/platform/system/tools/mkbootimg /home/uboot/mkbootimg
+RUN git clone https://android.googlesource.com/platform/system/tools/mkbootimg /home/uboot/mkbootimg --depth=1
