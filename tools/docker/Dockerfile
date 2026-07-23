@@ -25,7 +25,10 @@ ENV MIRROR=https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin
 # Toolchain version
 ENV TCVER=14.2.0
 
+ENV https_proxy=http://172.16.70.12:7890
+
 RUN echo "Building on $BUILDPLATFORM, for target $TARGETPLATFORM"
+RUN echo 'Acquire::http::Proxy "http://172.16.70.12:7890";' >> /etc/apt/apt.conf
 
 # Add tools to fetch archives with
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -152,6 +155,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	xilinx-bootgen \
 	xxd \
 	zip
+
+RUN git config --global http.proxy http://172.16.70.12:7890
 
 # Build GRUB UEFI targets for ARM & RISC-V, 32-bit and 64-bit, and LoongArch
 # 64-bit
