@@ -8,8 +8,6 @@
 
 #include <asm/loongarch.h>
 
-struct event;
-
 /*
  * Interrupt configuration macros
  */
