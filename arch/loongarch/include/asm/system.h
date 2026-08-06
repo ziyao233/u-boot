@@ -52,9 +52,9 @@ static inline unsigned long arch_local_irq_save(void)
 	return flags;
 }
 
-#define local_irq_save(__flags)                                 \
-	do {                                                        \
-		__flags = arch_local_irq_save(CSR_SSTATUS, SR_SIE) & SR_SIE; \
+#define local_irq_save(__flags)						\
+	do {								\
+		__flags = arch_local_irq_save();			\
 	} while (0)
 
 static inline void arch_local_irq_restore(unsigned long flags)
@@ -66,9 +66,9 @@ static inline void arch_local_irq_restore(unsigned long flags)
 		: "memory");
 }
 
-#define local_irq_restore(__flags)              \
-	do {                                        \
-		arch_local_irq_restore(__flags); \
+#define local_irq_restore(__flags)					\
+	do {								\
+		arch_local_irq_restore(__flags);			\
 	} while (0)
 
 #endif
