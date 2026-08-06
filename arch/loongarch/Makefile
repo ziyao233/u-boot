@@ -3,7 +3,9 @@
 # Copyright (C) 2024 Jiaxun yang <jiaxun.yang@flygoat.com>
 #
 
-ARCH_FLAGS = -march=loongarch64 -mabi=lp64d
+ifeq ($(CONFIG_ARCH_LA64),y)
+	ARCH_FLAGS = -march=loongarch64 -mabi=lp64d
+endif
 
 ifeq ($(CONFIG_$(SPL_)FRAMEPOINTER),y)
 	ARCH_FLAGS += -fno-omit-frame-pointer
