@@ -19,7 +19,7 @@ typedef unsigned short umode_t;
  */
 #ifdef __KERNEL__
 
-#define BITS_PER_LONG _LOONGARCH_SZLONG
+#define BITS_PER_LONG 64
 
 #include <stddef.h>
 
