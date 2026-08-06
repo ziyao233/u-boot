@@ -1152,10 +1152,9 @@ int fdtdec_setup_memory_banksize(void)
 			gd->dram[bank].size =
 					(phys_size_t)(res.end - res.start + 1);
 
-			log_debug("%s: DRAM Bank #%d %s.%d: start = 0x%llx, size = 0x%llx\n",
+			log_debug("%s: DRAM Bank #%d %s.%d: start = 0x%pap, size = 0x%pap\n",
 				  __func__, bank, ofnode_get_name(mem), reg,
-				 (unsigned long long)gd->dram[bank].start,
-				 (unsigned long long)gd->dram[bank].size);
+				  &gd->dram[bank].start, &gd->dram[bank].size);
 			reg++;
 			bank++;
 		}
