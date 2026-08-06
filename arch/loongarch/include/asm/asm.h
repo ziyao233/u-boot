@@ -28,7 +28,7 @@
 /*
  * Size of a register
  */
-#if defined(__loongarch__) && __loongarch_grlen == 64
+#if defined(__loongarch__) && __loongarch_grlen == 32
 #define SZREG	4
 #else
 #define SZREG	8
