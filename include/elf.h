@@ -227,7 +227,6 @@ typedef struct {
 #define EM_PJ		91		/* picoJava */
 #define EM_LOONGARCH	258	/* LoongArch */
 
-
 /* Version */
 #define EV_NONE		0		/* Invalid */
 #define EV_CURRENT	1		/* Current */
