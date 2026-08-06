@@ -1181,7 +1181,8 @@ int fdtdec_setup_mem_size_base_lowest(void)
 
 	while (true) {
 		struct resource res;
-		phys_size_t base, size;
+		phys_addr_t base;
+		phys_size_t size;
 		int reg = 0;
 
 		mem = get_next_memory_node(mem);
