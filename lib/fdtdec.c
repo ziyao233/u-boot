@@ -1143,8 +1143,10 @@ int fdtdec_setup_memory_banksize(void)
 			if (ret < 0)
 				break;
 
-			if (bank >= CONFIG_NR_DRAM_BANKS)
-				goto too_may_memory_banks;
+			if (bank >= CONFIG_NR_DRAM_BANKS) {
+				log_warning("%s: Too many memory banks\n", __func__);
+				return -EINVAL;
+			}
 
 			gd->dram[bank].start = res.start;
 			gd->dram[bank].size =
@@ -1167,10 +1169,6 @@ int fdtdec_setup_memory_banksize(void)
 	qsort(gd->dram, bank, sizeof(gd->dram[0]), cmp_memory_bank);
 
 	return 0;
-
-too_may_memory_banks:
-	log_warning("%s: Too many memory banks\n", __func__);
-	return -EINVAL;
 }
 
 int fdtdec_setup_mem_size_base_lowest(void)
