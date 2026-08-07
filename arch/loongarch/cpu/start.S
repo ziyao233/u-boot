@@ -57,7 +57,7 @@ call_board_init_f_0:
 	/* find top of reserve space */
 	PTR_LI		t1, 1
 	PTR_SLL		t1, t1, CONFIG_STACK_SIZE_SHIFT
-	PTR_SUB		a0, t0, t1		/* t1 -> size of all CPU stacks */
+	PTR_SUB		a0, t0, t1		/* t1 -> size of one CPU stack */
 	bl		board_init_f_alloc_reserve
 
 	/* Set global pointer to u0 ($r21) */
