@@ -41,6 +41,7 @@ config SHOW_REGS
 
 config FRAMEPOINTER
 	bool "Build with frame pointer for stack unwinding"
+	default y
 	help
 	  Choose this option to use the framepointer so the stack can be
 	  unwound if needed. This is useful for tracing where faults came
