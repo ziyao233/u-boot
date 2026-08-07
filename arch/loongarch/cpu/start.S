@@ -61,7 +61,7 @@ call_board_init_f_0:
 	bl		board_init_f_alloc_reserve
 
 	/* Set global pointer to $r21 */
-	move		$r21, a0
+	move		r21, a0
 	bl		board_init_f_init_reserve
 
 	/* Probe and enable cache */
