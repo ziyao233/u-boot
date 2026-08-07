@@ -60,8 +60,8 @@ call_board_init_f_0:
 	PTR_SUB		a0, t0, t1		/* t1 -> size of one CPU stack */
 	bl		board_init_f_alloc_reserve
 
-	/* Set global pointer to u0 ($r21) */
-	move		u0, a0
+	/* Set global pointer to $r21 */
+	move		r21, a0
 	bl		board_init_f_init_reserve
 
 	/* Probe and enable cache */
