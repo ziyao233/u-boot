@@ -76,8 +76,6 @@ call_board_init_f_0:
 	la.pcrel	t5, board_init_f
 	jirl		ra, t5, 0		/* jump to board_init_f() */
 
-	move		sp, s0
-
 /*
  * void relocate_code(addr_sp, gd, addr_moni)
  *
