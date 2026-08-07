@@ -40,7 +40,7 @@ _start:
 	csrrd		t0, LOONGARCH_CSR_CPUID
 	andi		t0, t0, CSR_CPUID_COREID
 	LONG_LI		t1, BOOTCORE_ID
-	bne			t1, t0, secondary_core_loop
+	bne		t1, t0, secondary_core_loop
 
 /*
  * Set stackpointer in internal/ex RAM to call board_init_f
