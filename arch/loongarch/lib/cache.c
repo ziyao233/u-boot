@@ -17,6 +17,30 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+/*
+ * Existing LoongArch hardware maintains I-D cache consistency in hardware,
+ * thus only an ibar instruction is used in operations related to I-cache, in
+ * order to prevent pipeline hazard.
+ *
+ * Cache operations is implemented through CACOP instruction, which has three
+ * arguments: index of the cache, the operation, and either the cache line
+ * index, or a virtual address. The first two arguments are combined into an
+ * immediate operand.
+ *
+ * Caches are indexed from L1 to L3. For a level with separate I/D caches, the
+ * I-cache is ordered before the D-cache.
+ *
+ * Currently three cache operations are defined,
+ *  - initialize a cache line
+ *  - invalidate (and possibly writeback if it's a D-cache) a cache line, where
+ *    the cache line is indexed by
+ *    - cache line index (CACHE_INDEX_INVWB), or
+ *    - virtual address (CACHE_HIT_INVWB)
+ *
+ * Invalidating the leaf cache automatically invalidates other caches if it's
+ * inclusive.
+ */
+
 static inline void flush_cache_line_index(unsigned int cache_id,
 					  unsigned long index)
 {
@@ -191,6 +215,11 @@ void probe_caches(void)
 
 	cfg >>= 3;
 
+	/*
+	 * Currently no CPUCFG register is defined to hold information for
+	 * separate L2D and L3D. Assume that L2 and L3, if present, must be
+	 * unified or instruction-only.
+	 */
 	for (; level < CACHE_MAX_LEVEL; level++) {
 		if (cfg & CPUCFG_LX_IUPRE && cfg & CPUCFG_LX_IUUNIFY) {
 			gd->arch.dcache_index[level] = index++;
