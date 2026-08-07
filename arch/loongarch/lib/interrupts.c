@@ -17,6 +17,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define REG_FP 22
+
 static struct resume_data *resume;
 
 void set_resume(struct resume_data *data)
@@ -49,7 +51,7 @@ static void __maybe_unused show_regs(struct pt_regs *regs)
 
 static void __maybe_unused show_backtrace(struct pt_regs *regs)
 {
-	uintptr_t *fp = (uintptr_t *)regs->regs[0x16];
+	uintptr_t *fp = (uintptr_t *)regs->regs[REG_FP];
 	unsigned int count = 0;
 	ulong ra;
 
