@@ -24,9 +24,8 @@ void set_resume(struct resume_data *data)
 	resume = data;
 }
 
-static void show_regs(struct pt_regs *regs)
+static void __maybe_unused show_regs(struct pt_regs *regs)
 {
-#if IS_ENABLED(CONFIG_SHOW_REGS)
 	const int field = 2 * sizeof(unsigned long);
 
 #define GPR_FIELD(x) field, regs->regs[x]
@@ -46,7 +45,6 @@ static void show_regs(struct pt_regs *regs)
 	       GPR_FIELD(24), GPR_FIELD(25), GPR_FIELD(26), GPR_FIELD(27));
 	printf("s5 %0*lx s6 %0*lx s7 %0*lx s8 %0*lx\n",
 	       GPR_FIELD(28), GPR_FIELD(29), GPR_FIELD(30), GPR_FIELD(31));
-#endif
 }
 
 static void __maybe_unused show_backtrace(struct pt_regs *regs)
@@ -160,7 +158,10 @@ asmlinkage void do_exceptions(struct pt_regs *regs)
 		printf("BADV: " REG_FMT "\n", regs->csr_badvaddr);
 
 	printf("\n");
+
+#if IS_ENABLED(CONFIG_SHOW_REGS)
 	show_regs(regs);
+#endif
 
 	if (CONFIG_IS_ENABLED(FRAMEPOINTER))
 		show_backtrace(regs);
