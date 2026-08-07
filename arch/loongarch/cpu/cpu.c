@@ -5,24 +5,12 @@
  * Copyright (C) 2026 Yao Zi <me@ziyao.cc>
  */
 
-#include <command.h>
-#include <cpu.h>
-#include <cpu_func.h>
-#include <dm.h>
-#include <dm/lists.h>
-#include <event.h>
 #include <hang.h>
-#include <init.h>
-#include <log.h>
-#include <asm/system.h>
-#include <dm/uclass-internal.h>
-#include <linux/bitops.h>
+#include <stdio.h>
 
 #if !CONFIG_IS_ENABLED(SYSRESET)
 void reset_cpu(void)
 {
-	printf("resetting ...\n");
-
 	printf("reset not supported yet\n");
 	hang();
 }
