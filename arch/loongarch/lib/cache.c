@@ -17,44 +17,45 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-static inline void flush_cache_line_index(unsigned int index,
-					  unsigned long addr)
+static inline void flush_cache_line_index(unsigned int cache_id,
+					  unsigned long index)
 {
-#define do_flush(index)							\
-	case index:							\
+#define do_flush(_cache_id, _index)					\
+	case _cache_id:							\
 		cache_op(FIELD_PREP(CACHE_OP, CACHE_INDEX_INVWB) |	\
-			 FIELD_PREP(CACHE_INDEX, index),		\
-			 index);					\
+			 FIELD_PREP(CACHE_INDEX, _cache_id),		\
+			 _index);					\
 		break;
 
-	switch (index) {
-		do_flush(0);
-		do_flush(1);
-		do_flush(2);
-		do_flush(3);
-		do_flush(4);
-		do_flush(5);
+	switch (cache_id) {
+		do_flush(0, index);
+		do_flush(1, index);
+		do_flush(2, index);
+		do_flush(3, index);
+		do_flush(4, index);
+		do_flush(5, index);
 	}
 
 #undef do_flush
 }
 
-static inline void flush_cache_line_hit(unsigned int index, unsigned long addr)
+static inline void flush_cache_line_hit(unsigned int cache_id,
+					unsigned long addr)
 {
-#define do_flush(index)							\
-	case index:							\
+#define do_flush(_cache_id, _addr)					\
+	case _cache_id:							\
 		cache_op(FIELD_PREP(CACHE_OP, CACHE_HIT_INVWB) |	\
-			 FIELD_PREP(CACHE_INDEX, index),		\
-			 addr);						\
+			 FIELD_PREP(CACHE_INDEX, _cache_id),		\
+			 _addr);					\
 		break;
 
-	switch (index) {
-		do_flush(0);
-		do_flush(1);
-		do_flush(2);
-		do_flush(3);
-		do_flush(4);
-		do_flush(5);
+	switch (cache_id) {
+		do_flush(0, addr);
+		do_flush(1, addr);
+		do_flush(2, addr);
+		do_flush(3, addr);
+		do_flush(4, addr);
+		do_flush(5, addr);
 	}
 
 #undef do_flush
