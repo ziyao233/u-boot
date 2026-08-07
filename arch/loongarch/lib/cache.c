@@ -191,7 +191,7 @@ void probe_caches(void)
 
 	cfg >>= 3;
 
-	for (; level < 3; level++) {
+	for (; level < CACHE_MAX_LEVEL; level++) {
 		if (cfg & CPUCFG_LX_IUPRE && cfg & CPUCFG_LX_IUUNIFY) {
 			gd->arch.dcache_index[level] = index++;
 			populate_dcache_properties(cfg, level,
