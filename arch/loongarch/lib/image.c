@@ -20,9 +20,9 @@ DECLARE_GLOBAL_DATA_PTR;
 struct linux_image_h {
 	uint32_t	code0;			/* Executable code */
 	uint32_t	code1;			/* Executable code */
-	uint64_t	kernel_entry;	/* Kernel entry point */
+	uint64_t	kernel_entry;		/* Kernel entry point */
 	uint64_t	image_size;		/* Effective Image size */
-	uint64_t	load_offset;	/* load offset */
+	uint64_t	load_offset;		/* load offset */
 	uint64_t	res1;			/* reserved */
 	uint64_t	res2;			/* reserved */
 	uint64_t	res3;			/* reserved */
