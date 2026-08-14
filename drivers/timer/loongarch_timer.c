@@ -3,10 +3,12 @@
  * Copyright (C) 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
  */
 
+#include <asm/loongarch.h>
+#include <div64.h>
 #include <dm.h>
+#include <dm/device_compat.h>
 #include <errno.h>
 #include <timer.h>
-#include <asm/loongarch.h>
 
 static u64 notrace loongarch_timer_get_count(struct udevice *dev)
 {
@@ -23,7 +25,7 @@ static u64 notrace loongarch_timer_get_count(struct udevice *dev)
 	return ((u64)hi << 32) | lo;
 }
 
-static unsigned int loongarch_timer_get_freq_cpucfg(void)
+static int loongarch_timer_get_freq_cpucfg(unsigned int *freq)
 {
 	unsigned int res;
 	unsigned int base_freq;
@@ -31,7 +33,7 @@ static unsigned int loongarch_timer_get_freq_cpucfg(void)
 
 	res = read_cpucfg(LOONGARCH_CPUCFG2);
 	if (!(res & CPUCFG2_LLFTP))
-		return 0;
+		return -ENODEV;
 
 	base_freq = read_cpucfg(LOONGARCH_CPUCFG4);
 	res = read_cpucfg(LOONGARCH_CPUCFG5);
@@ -39,9 +41,11 @@ static unsigned int loongarch_timer_get_freq_cpucfg(void)
 	cfd = (res >> 16) & 0xffff;
 
 	if (!base_freq || !cfm || !cfd)
-		return 0;
+		return -EINVAL;
 
-	return (base_freq * cfm / cfd);
+	*freq = base_freq * cfm / cfd;
+
+	return 0;
 }
 
 #if IS_ENABLED(CONFIG_TIMER_EARLY)
@@ -50,7 +54,13 @@ static unsigned int loongarch_timer_get_freq_cpucfg(void)
  */
 unsigned long notrace timer_early_get_rate(void)
 {
-	return loongarch_timer_get_freq_cpucfg();
+	unsigned int freq;
+	int ret = loongarch_timer_get_freq_cpucfg(&freq);
+
+	if (ret)
+		panic("Failed to read timer frequency from cpucfg: %d\n", ret);
+
+	return freq;
 }
 
 /**
@@ -75,21 +85,31 @@ ulong timer_get_boot_us(void)
 		rate = timer_get_rate(gd->timer);
 		timer_get_count(gd->timer, &ticks);
 	} else {
-		rate = loongarch_timer_get_freq_cpucfg();
+		ret = loongarch_timer_get_freq_cpucfg(&rate);
+		if (ret)
+			panic("failed to read timer frequency from cpucfg: %d\n", ret);
+
 		ticks = loongarch_timer_get_count(NULL);
 	}
 
-	/* Below is converted from time(us) = (tick / rate) * 10000000 */
+	/* Below is converted from time(us) = (tick / rate) * 1000000 */
 	return lldiv(ticks * 1000, (rate / 1000));
 }
 #endif
 
-static int loongarch_timer_bind(struct udevice *dev)
+static int loongarch_timer_probe(struct udevice *dev)
 {
 	struct timer_dev_priv *uc_priv = dev_get_uclass_priv(dev);
-	u32 rate;
+	unsigned int rate;
+	int ret;
 
-	rate = loongarch_timer_get_freq_cpucfg();
+	ret = loongarch_timer_get_freq_cpucfg(&rate);
+	if (ret < 0) {
+		dev_err(dev, "failed to read timer frequency from cpucfg: %d\n",
+			ret);
+		return ret;
+	}
+
 	uc_priv->clock_rate = rate;
 
 	return 0;
@@ -102,7 +122,7 @@ static const struct timer_ops loongarch_timer_ops = {
 U_BOOT_DRIVER(loongarch_timer) = {
 	.name = "loongarch_timer",
 	.id = UCLASS_TIMER,
-	.probe = loongarch_timer_bind,
+	.probe = loongarch_timer_probe,
 	.ops = &loongarch_timer_ops,
 	.flags = DM_FLAG_PRE_RELOC,
 };
