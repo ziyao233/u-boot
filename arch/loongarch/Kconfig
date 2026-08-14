@@ -50,17 +50,6 @@ config FRAMEPOINTER
 	  If you say Y here, the code size will increase due to having to
 	  store the fp.
 
-config SPL_FRAMEPOINTER
-	bool "Build SPL with frame pointer for stack unwinding"
-	depends on SPL
-	help
-	  Choose this option to use the framepointer so the stack can be
-	  unwound if needed. This is useful for tracing where faults came
-	  from as the source may be several functions back.
-
-	  If you say Y here, the code size will increase due to having to
-	  store the fp.
-
 config STACK_SIZE_SHIFT
 	int
 	default 14
