@@ -5,14 +5,13 @@
  * Based on riscv/lib/image.c
  */
 
-#include <image.h>
-#include <mapmem.h>
-#include <errno.h>
 #include <asm/global_data.h>
+#include <errno.h>
+#include <image.h>
+#include <linux/bitfield.h>
 #include <linux/sizes.h>
 #include <linux/stddef.h>
-#include <asm/addrspace.h>
-#include <linux/bitfield.h>
+#include <mapmem.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
