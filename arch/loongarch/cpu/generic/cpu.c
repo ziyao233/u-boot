@@ -7,10 +7,10 @@
 #include <asm/cache.h>
 
 /*
- * cleanup_before_linux() is called just before we call linux
- * it prepares the processor for linux
+ * cleanup_before_linux() is called just before we call Linux, it prepares the
+ * processor for linux
  *
- * we disable interrupt and caches.
+ * We disable interrupts and flush caches.
  */
 int cleanup_before_linux(void)
 {
