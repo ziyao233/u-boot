@@ -20,28 +20,22 @@ static int loongarch_cpu_get_desc(const struct udevice *dev, char *buf, int size
 
 	/* We try to get CPU name from IOCSR first */
 	if ((read_cpucfg(LOONGARCH_CPUCFG1) & CPUCFG1_IOCSR)) {
-		int i;
 		char vendor_buf[9] = { 0 };
 		char name_buf[9] = { 0 };
 		u64 vendor = iocsr_read64(LOONGARCH_IOCSR_VENDOR);
 		u64 name = iocsr_read64(LOONGARCH_IOCSR_CPUNAME);
 
-		if (!vendor || !name)
-			goto get_desc_dt;
+		if (vendor && name) {
+			int ret;
 
-		for (i = 0; i < sizeof(u64); i++) {
-			vendor_buf[i] = vendor & 0xff;
-			name_buf[i] = name & 0xff;
-			vendor >>= 8;
-			name >>= 8;
+			memcpy(vendor_buf, &vendor, sizeof(vendor));
+			memcpy(name_buf, &name, sizeof(name));
+
+			ret = snprintf(buf, size, "%s-%s", vendor_buf, name_buf);
+			return ret >= size ? -ENOSPC : 0;
 		}
-
-		snprintf(buf, size, "%s-%s", vendor_buf, name_buf);
-
-		return 0;
 	}
 
-get_desc_dt:
 	cpu = dev_read_string(dev, "compatible");
 	if (!cpu || size < (strlen(cpu) + 1))
 		return -ENOSPC;
