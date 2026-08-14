@@ -12,6 +12,7 @@
 #include <linux/sizes.h>
 #include <linux/stddef.h>
 #include <asm/addrspace.h>
+#include <linux/bitfield.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -56,8 +57,19 @@ int booti_setup(ulong image, ulong *relocated_addr, ulong *size, ulong *ep,
 		*relocated_addr = image;
 	}
 
-	/* To workaround kernel supplying DMW based virtual address */
-	ep_phys = TO_PHYS(lhdr->kernel_entry);
+	/*
+	 * Before Linux commit beb2800074c1 ("LoongArch: Fix entry point in
+	 * kernel image header"), kernel_entry is filled with a DMW-mapped
+	 * virtual address instead of a physical address, we must convert it
+	 * back to physical address.
+	 *
+	 * On loongarch64, the lowest 60 bits of DMW-mapped address are
+	 * identical to the physical address, and the highest 4 bits are for
+	 * determining access privileges and types. So clearing the highest 4
+	 * bits works around the issue, and is a no-op since the length of
+	 * physical addresses never exceed 60 bits.
+	 */
+	ep_phys = lhdr->kernel_entry & GENMASK(59, 0);
 	*ep = *relocated_addr + (ep_phys - lhdr->load_offset);
 
 	unmap_sysmem(lhdr);
