@@ -18,7 +18,7 @@
 #include <linux/sizes.h>
 #include <log.h>
 #include <memalign.h>
-#include <u-boot/zlib.h>
+#include <u-boot/crc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
