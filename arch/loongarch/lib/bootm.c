@@ -26,10 +26,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static const efi_guid_t efi_guid_fdt = EFI_FDT_GUID;
 
-__weak void board_quiesce_devices(void)
-{
-}
-
 /**
  * announce_and_cleanup() - Print message and prepare for kernel boot
  *
