@@ -92,9 +92,13 @@ static void boot_jump_linux(struct bootm_headers *images, int flag)
 	cleanup_before_linux();
 
 	if (!fake) {
-		if (CONFIG_IS_ENABLED(OF_LIBFDT) && images->ft_len)
+		if (CONFIG_IS_ENABLED(OF_LIBFDT) && images->ft_len) {
 			kernel(0, (char *)images->cmdline_start,
 			       (void *)images->kbd->bi_boot_params);
+		} else {
+			printf("Device tree not found or missing FDT support\n");
+			hang();
+		}
 	}
 }
 
