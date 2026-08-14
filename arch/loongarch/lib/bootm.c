@@ -34,7 +34,7 @@ static int generate_systab(struct bootm_headers *images)
 	size_t table_size = sizeof(struct efi_system_table) +
 			    nr_cfgtab * sizeof(struct efi_configuration_table);
 
-	systab = memalign(SZ_64K, table_size);
+	systab = malloc(table_size);
 	if (!systab) {
 		log_warning("Failed to allocate memory for systab\n");
 		return -ENOMEM;
@@ -48,7 +48,7 @@ static int generate_systab(struct bootm_headers *images)
 	systab->nr_tables = nr_cfgtab;
 	systab->tables = cfgtab;
 	systab->hdr.crc32 = crc32(0, (const unsigned char *)systab,
-				systab->hdr.headersize);
+				  systab->hdr.headersize);
 
 	cfgtab[0].guid = efi_guid_fdt;
 	cfgtab[0].table = images->ft_addr;
@@ -78,10 +78,10 @@ static void boot_prep_linux(struct bootm_headers *images)
 
 static void boot_jump_linux(struct bootm_headers *images, int flag)
 {
-	void (*kernel)(ulong efi_boot, char *argc, void *dtb);
+	void (*kernel)(ulong efi_boot, char *cmdline, void *systab);
 	int fake = (flag & BOOTM_STATE_OS_FAKE_GO);
 
-	kernel = (void (*)(ulong efi_boot, char *argc, void *dtb))images->ep;
+	kernel = (void (*)(ulong efi_boot, char *cmdline, void *systab))images->ep;
 
 	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
 
@@ -93,7 +93,8 @@ static void boot_jump_linux(struct bootm_headers *images, int flag)
 
 	if (!fake) {
 		if (CONFIG_IS_ENABLED(OF_LIBFDT) && images->ft_len)
-			kernel(0, NULL, (void *)images->kbd->bi_boot_params);
+			kernel(0, (char *)images->cmdline_start,
+			       (void *)images->kbd->bi_boot_params);
 	}
 }
 
