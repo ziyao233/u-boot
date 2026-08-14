@@ -26,39 +26,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static const efi_guid_t efi_guid_fdt = EFI_FDT_GUID;
 
-/**
- * announce_and_cleanup() - Print message and prepare for kernel boot
- *
- * @fake: non-zero to do everything except actually boot
- */
-static void announce_and_cleanup(int fake)
-{
-	printf("\nStarting kernel ...%s\n\n", fake ?
-		"(fake run for tracing)" : "");
-	bootstage_mark_name(BOOTSTAGE_ID_BOOTM_HANDOFF, "start_kernel");
-#if CONFIG_IS_ENABLED(BOOTSTAGE_FDT)
-	bootstage_fdt_add_report();
-#endif
-#if CONFIG_IS_ENABLED(BOOTSTAGE_REPORT)
-	bootstage_report();
-#endif
-
-#if CONFIG_IS_ENABLED(USB_DEVICE)
-	udc_disconnect();
-#endif
-
-	board_quiesce_devices();
-
-	/*
-	 * Call remove function of all devices with a removal flag set.
-	 * This may be useful for last-stage operations, like cancelling
-	 * of DMA operation or releasing device internal buffers.
-	 */
-	dm_remove_devices_flags(DM_REMOVE_ACTIVE_ALL);
-
-	cleanup_before_linux();
-}
-
 /* LoongArch do expect a EFI style systab */
 static int generate_systab(struct bootm_headers *images)
 {
@@ -123,7 +90,8 @@ static void boot_jump_linux(struct bootm_headers *images, int flag)
 	debug("## Transferring control to kernel (at address %08lx) ...\n",
 	      (ulong)kernel);
 
-	announce_and_cleanup(fake);
+	bootm_final(fake);
+	cleanup_before_linux();
 
 	if (!fake) {
 		if (CONFIG_IS_ENABLED(OF_LIBFDT) && images->ft_len)
