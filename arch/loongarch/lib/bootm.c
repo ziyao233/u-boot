@@ -3,23 +3,21 @@
  * Copyright (C) 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
  */
 
+#include <asm/global_data.h>
 #include <bootstage.h>
 #include <bootm.h>
 #include <command.h>
 #include <dm.h>
+#include <dm/device.h>
+#include <dm/root.h>
 #include <efi.h>
 #include <efi_api.h>
 #include <fdt_support.h>
 #include <hang.h>
-#include <log.h>
-#include <linux/sizes.h>
-#include <memalign.h>
-#include <asm/global_data.h>
-#include <dm/root.h>
 #include <image.h>
-#include <asm/byteorder.h>
-#include <dm/device.h>
-#include <dm/root.h>
+#include <linux/sizes.h>
+#include <log.h>
+#include <memalign.h>
 #include <u-boot/zlib.h>
 
 DECLARE_GLOBAL_DATA_PTR;
