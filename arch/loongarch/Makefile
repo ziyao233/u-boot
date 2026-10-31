@@ -4,7 +4,7 @@
 #
 
 ifeq ($(CONFIG_ARCH_LA64),y)
-	ARCH_FLAGS = -march=loongarch64 -mabi=lp64d
+	ARCH_FLAGS = -march=loongarch64 -mabi=lp64d -mstrict-align
 endif
 
 ifeq ($(CONFIG_$(SPL_)FRAMEPOINTER),y)
