@@ -1,0 +1,26 @@
+if TARGET_CTCISZ_FOREVER_PI
+
+config SYS_BOARD
+	default "ctcisz-foreverpi"
+
+config SYS_VENDOR
+	default "loongson"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "ctcisz-foreverpi"
+
+config DEFAULT_DEVICE_TREE
+	default "loongson-2k0300-ctcisz-forever-pi"
+
+config TEXT_BASE
+	default 0x1000000
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select GENERIC_LOONGARCH
+	imply SYS_NS16550
+
+endif

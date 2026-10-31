@@ -10,10 +10,14 @@ choice
 config TARGET_QEMU_LOONGARCH_VIRT
 	bool "Support QEMU Virt Board"
 
+config TARGET_CTCISZ_FOREVER_PI
+	bool "Support CTCISZ Forever Pi Board"
+
 endchoice
 
 # board-specific options below
 source "board/emulation/qemu-loongarch/Kconfig"
+source "board/loongson/foreverpi/Kconfig"
 
 # platform-specific options below
 source "arch/loongarch/cpu/generic/Kconfig"
